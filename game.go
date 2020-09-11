@@ -17,6 +17,7 @@ type Game struct {
 	state        GameState
 	debug        bool
 	timer        float64
+	level        *Level
 }
 
 // NewGame creates a new game instance and prepares a demo AI game
@@ -30,6 +31,7 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 		audioContext: audioContext,
 		musicPlayer:  m,
 		state:        StateMenu,
+		level:        NewLevel(),
 	}
 
 	return g, nil
@@ -40,12 +42,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 	return WindowWidth, WindowHeight
 }
 
-// Start initializes a game with a number of players
-func (g *Game) Start(players int) *Game {
-	if players < 0 || players > 2 {
-		players = 0
-	}
+// Start initializes a new game
+func (g *Game) Start() *Game {
 	g.timer = -1
+	g.level = NewLevel()
 
 	g.state = StatePlaying
 	return g
@@ -61,7 +61,9 @@ func (g *Game) Update(screen *ebiten.Image) error {
 	}
 
 	if g.state == StateMenu {
-
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			g.Start()
+		}
 		return nil
 	}
 	if g.state == StatePlaying {
@@ -105,6 +107,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(images[fmt.Sprintf("space%.0f", frame)], op)
 
 	case StatePlaying:
+		g.level.Draw(screen)
 
 	case StateGameOver:
 	}

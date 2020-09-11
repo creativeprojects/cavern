@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	_ "image/png"
 	"log"
 
@@ -18,19 +19,20 @@ var (
 	sounds     map[string][]byte
 	imageNames = []string{
 		imageTitle,
-		"space0",
-		"space1",
-		"space2",
-		"space3",
-		"space4",
-		"space5",
-		"space6",
-		"space7",
-		"space8",
-		"space9",
 	}
 	soundNames = []string{}
 )
+
+func init() {
+	// it's easier to build up image names this way
+	for i := 0; i <= 9; i++ {
+		imageNames = append(imageNames, fmt.Sprintf("space%d", i))
+	}
+	for i := 0; i <= 3; i++ {
+		imageNames = append(imageNames, fmt.Sprintf("bg%d", i))
+		imageNames = append(imageNames, fmt.Sprintf("block%d", i))
+	}
+}
 
 func main() {
 	var err error
