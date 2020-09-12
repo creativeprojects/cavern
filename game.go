@@ -46,9 +46,16 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func (g *Game) Start() *Game {
 	g.timer = -1
 	g.level = NewLevel()
+	g.level.Next()
 
 	g.state = StatePlaying
 	return g
+}
+
+// NextLevel loads the next level
+func (g *Game) NextLevel() {
+	g.SoundEffect(sounds[soundLevel])
+	g.level.Next()
 }
 
 // Update game events
@@ -67,7 +74,10 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		return nil
 	}
 	if g.state == StatePlaying {
-
+		// skip to next level
+		if inpututil.IsKeyJustPressed(ebiten.KeyN) {
+			g.NextLevel()
+		}
 		return nil
 	}
 
@@ -123,9 +133,11 @@ func (g *Game) SoundEffect(se []byte) {
 }
 
 func (g *Game) displayDebug(screen *ebiten.Image) {
-	template := " TPS: %0.2f \n "
+	template := " TPS: %0.2f \n Level %d \n Colour %d \n"
 	msg := fmt.Sprintf(template,
 		ebiten.CurrentTPS(),
+		g.level.id,
+		g.level.colour,
 	)
 	ebitenutil.DebugPrint(screen, msg)
 }

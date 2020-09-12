@@ -1,7 +1,7 @@
 package main
 
 var (
-	LevelsDefinition = [][]string{
+	LevelsDefinition = [...][]string{
 		{
 			"XXXXX     XXXXXXXX     XXXXX",
 			"", "", "", "",

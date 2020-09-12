@@ -12,6 +12,7 @@ import (
 // Images
 const (
 	imageTitle = "title"
+	soundLevel = "level0"
 )
 
 var (
@@ -20,7 +21,9 @@ var (
 	imageNames = []string{
 		imageTitle,
 	}
-	soundNames = []string{}
+	soundNames = []string{
+		soundLevel,
+	}
 )
 
 func init() {
