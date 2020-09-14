@@ -18,6 +18,7 @@ type Game struct {
 	debug        bool
 	timer        float64
 	level        *Level
+	fruits       []*Fruit
 }
 
 // NewGame creates a new game instance and prepares a demo AI game
@@ -32,6 +33,7 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 		musicPlayer:  m,
 		state:        StateMenu,
 		level:        NewLevel(),
+		fruits:       make([]*Fruit, 0, 10),
 	}
 
 	return g, nil
@@ -78,6 +80,14 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		if inpututil.IsKeyJustPressed(ebiten.KeyN) {
 			g.NextLevel()
 		}
+
+		if math.Mod(g.timer, 100) == 0 {
+			// x 70 to 730, y 75 to 400
+			g.fruits = append(g.fruits, NewFruit(g.level, true))
+		}
+		for _, fruit := range g.fruits {
+			fruit.Update()
+		}
 		return nil
 	}
 
@@ -115,6 +125,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(130, 280)
 		frame := math.Min((math.Floor(math.Mod(g.timer+60, 160)) / 4), 9)
 		screen.DrawImage(images[fmt.Sprintf("space%.0f", frame)], op)
+
+		for _, fruit := range g.fruits {
+			fruit.Draw(screen, g.timer)
+		}
 
 	case StatePlaying:
 		g.level.Draw(screen)
