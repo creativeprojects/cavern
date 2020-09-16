@@ -66,9 +66,9 @@ func (l *Level) Draw(screen *ebiten.Image) {
 }
 
 // Block returns true if there's a grid block at these coordinates
-func (l *Level) Block(x, y float64) bool {
-	gridX := math.Floor((x - LeftGridOffset) / GridBlockSize)
-	gridY := math.Floor(y / GridBlockSize)
+func (l *Level) Block(x, y int) bool {
+	gridX := (x - LeftGridOffset) / GridBlockSize
+	gridY := y / GridBlockSize
 	if gridY > 0 && gridY < NumRows {
 		row := l.grid[int(gridY)]
 		return gridX >= 0 && gridX < NumColumns && len(row) > 0 && row[int(gridX)] != ' '

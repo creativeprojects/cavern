@@ -35,6 +35,16 @@ func init() {
 		imageNames = append(imageNames, fmt.Sprintf("bg%d", i))
 		imageNames = append(imageNames, fmt.Sprintf("block%d", i))
 	}
+	for i := 0; i <= 4; i++ {
+		for j := 0; j <= 2; j++ {
+			imageNames = append(imageNames, fmt.Sprintf("fruit%d%d", i, j))
+		}
+	}
+	for i := 0; i <= 1; i++ {
+		for j := 0; j <= 6; j++ {
+			imageNames = append(imageNames, fmt.Sprintf("pop%d%d", i, j))
+		}
+	}
 }
 
 func main() {

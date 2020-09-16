@@ -2,21 +2,23 @@ package main
 
 import "math"
 
+// Collide manages collision between a sprite and a grid
 type Collide struct {
-	level *Level
-	x     float64
-	y     float64
+	level  *Level
+	sprite *Sprite
 }
 
-func NewCollide(level *Level) *Collide {
+// NewCollide creates a new collision detection between a sprite and a grid
+func NewCollide(level *Level, sprite *Sprite) *Collide {
 	return &Collide{
-		level: level,
+		level:  level,
+		sprite: sprite,
 	}
 }
 
 // Move sets the new position, and returns true if the move was successful (returns false if there was a wall)
 func (c *Collide) Move(dx, dy, speed float64) bool {
-	newX, newY := c.x, c.y
+	newX, newY := c.sprite.X(XCentre), c.sprite.Y(YBottom)
 
 	// movement is done 1 pixel at a time
 	for i := 0; i < int(speed); i++ {
@@ -26,13 +28,15 @@ func (c *Collide) Move(dx, dy, speed float64) bool {
 			// collided with edges of the grid
 			return false
 		}
-		if (dy > 0 && math.Mod(newY, GridBlockSize) == 0 ||
-			dx > 0 && math.Mod(newX, GridBlockSize) == 0 ||
-			dx < 0 && math.Mod(newX, GridBlockSize) == GridBlockSize-1) && c.level.Block(newX, newY) {
+		// we check for a block: in the direction we're moving to, and only when we're at the edge of one
+		// we don't check for collision when the item is moving up
+		if (dy > 0 && math.Mod(float64(newY), GridBlockSize) == 0 ||
+			dx > 0 && math.Mod(float64(newX), GridBlockSize) == 0 ||
+			dx < 0 && math.Mod(float64(newX), GridBlockSize) == GridBlockSize-1) && c.level.Block(int(newX), int(newY)) {
 			return false
 		}
 		// register the move
-		c.x, c.y = newX, newY
+		c.sprite.MoveToType(newX, newY, XCentre, YBottom)
 	}
 	return true
 }

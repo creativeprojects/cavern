@@ -8,9 +8,9 @@ type Gravity struct {
 	landed bool
 }
 
-func NewGravity(level *Level) *Gravity {
+func NewGravity(level *Level, sprite *Sprite) *Gravity {
 	return &Gravity{
-		Collide: NewCollide(level),
+		Collide: NewCollide(level, sprite),
 		speed:   0,
 		landed:  false,
 	}
@@ -28,11 +28,15 @@ func (g *Gravity) UpdateFall() {
 		g.speed = 0
 		g.landed = true
 	}
+	if g.sprite.Y(YTop) >= WindowHeight {
+		// fallen off the bottom, reappear at the top
+		g.sprite.MoveTo(g.sprite.x, g.sprite.y-WindowHeight)
+	}
 }
 
 func (g *Gravity) UpdateFreeFall() {
 	// Apply gravity, without going over the maximum fall speed
 	g.speed = math.Min(g.speed+1, MaxFallSpeed)
 	// collision detection disabled
-	g.y += g.speed
+	g.sprite.Move(0, g.speed)
 }
