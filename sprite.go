@@ -37,7 +37,7 @@ type Sprite struct {
 	yType        YType
 	x            float64
 	y            float64
-	frame        int             // current frame (animation mode)
+	frame        int             // current frame counter (animation mode)
 	width        int             // fixed size only
 	height       int             // fixed size only
 	image        *ebiten.Image   // single image (no animation)
@@ -91,39 +91,23 @@ func (s *Sprite) Update() {
 	if !s.loop && s.frame >= s.rate*len(s.animation) {
 		// animation is finished
 		s.started = false
+		return
 	}
-	// TODO now update current frame
+	// update current frame
+	frameID := s.getFrameID()
+	s.image = s.animation[frameID]
 }
 
 // Draw the current image, or the animation to the screen. If no image or animation has been set, it does nothing
 func (s *Sprite) Draw(screen *ebiten.Image) {
-	// try animation first
-	if s.started {
-		s.drawAnimation(screen)
-		return
-	}
-	// try single image next
 	if s.image == nil {
 		log.Println("Sprite.Draw: no image to draw")
 		return
 	}
-	s.draw(screen, s.image)
-}
-
-func (s *Sprite) draw(screen, image *ebiten.Image) {
-	width, height := image.Size()
+	width, height := s.image.Size()
 	s.op.GeoM.Reset()
 	s.op.GeoM.Translate(s.xleft(float64(width)), s.ytop(float64(height)))
-	screen.DrawImage(image, s.op)
-}
-
-func (s *Sprite) drawAnimation(screen *ebiten.Image) {
-	frameID := s.getFrameID()
-	image := s.animation[frameID]
-	if image == nil {
-		return
-	}
-	s.draw(screen, image)
+	screen.DrawImage(s.image, s.op)
 }
 
 func (s *Sprite) getFrameID() int {
@@ -154,6 +138,12 @@ func (s *Sprite) Start() *Sprite {
 	return s
 }
 
+// Stop animation
+func (s *Sprite) Stop() *Sprite {
+	s.started = false
+	return s
+}
+
 // Animation defines a new animation (but does not start it yet)
 func (s *Sprite) Animation(animation []*ebiten.Image, sequence []int, rate int, loop bool) *Sprite {
 	s.animation = animation
@@ -172,12 +162,15 @@ func (s *Sprite) Animate(animation []*ebiten.Image, sequence []int, rate int, lo
 	return s.Start()
 }
 
+// SetSequenceFunc registers a callback to calculate the next image.
+// the value returned should be a valid index in the animation slice passed to the Animation method
 func (s *Sprite) SetSequenceFunc(sequenceFunc SequenceFunc) *Sprite {
 	s.sequenceFunc = sequenceFunc
 	return s
 }
 
-// IsFinished returns true when the animation has finished
+// IsFinished returns true when the animation has finished.
+// An animation with loop = true will never finish
 func (s *Sprite) IsFinished() bool {
 	return !s.started
 }
@@ -241,6 +234,12 @@ func (s *Sprite) Y(yType YType) float64 {
 	default:
 		return s.ytop(float64(height))
 	}
+}
+
+// CollidePoint returns true when the coordinates are "touching" the sprite
+func (s *Sprite) CollidePoint(x, y float64) bool {
+	return s.X(XLeft) <= x && x <= s.X(XRight) &&
+		s.Y(YTop) <= y && y <= s.Y(YBottom)
 }
 
 func (s *Sprite) xleft(width float64) float64 {

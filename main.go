@@ -11,8 +11,15 @@ import (
 
 // Images
 const (
-	imageTitle = "title"
+	imageTitle       = "title"
+	imagePlayerStill = "still"
+	imageJumpLeft    = "jump0"
+	imageJumpRight   = "jump1"
+
 	soundLevel = "level0"
+	soundJump  = "jump0"
+	soundScore = "score0"
+	soundBonus = "bonus0"
 )
 
 var (
@@ -20,9 +27,15 @@ var (
 	sounds     map[string][]byte
 	imageNames = []string{
 		imageTitle,
+		imagePlayerStill,
+		imageJumpLeft,
+		imageJumpRight,
 	}
 	soundNames = []string{
 		soundLevel,
+		soundJump,
+		soundScore,
+		soundBonus,
 	}
 )
 
@@ -44,6 +57,15 @@ func init() {
 		for j := 0; j <= 6; j++ {
 			imageNames = append(imageNames, fmt.Sprintf("pop%d%d", i, j))
 		}
+	}
+	for i := 0; i <= 1; i++ {
+		for j := 0; j <= 3; j++ {
+			imageNames = append(imageNames, fmt.Sprintf("run%d%d", i, j))
+		}
+	}
+	// sounds
+	for i := 0; i <= 3; i++ {
+		soundNames = append(soundNames, fmt.Sprintf("land%d", i))
 	}
 }
 

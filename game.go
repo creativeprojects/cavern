@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/audio"
@@ -21,6 +22,7 @@ type Game struct {
 	timer        float64
 	space        *Sprite
 	level        *Level
+	player       *Player
 	fruits       []*Fruit
 	pops         []*Pop
 }
@@ -32,6 +34,7 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
+	level := NewLevel()
 	g := &Game{
 		audioContext: audioContext,
 		musicPlayer:  m,
@@ -49,7 +52,8 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 			// which stage the animation is at when the game first starts
 			return int(math.Min((math.Floor(math.Mod(float64(counter)+40, 160)) / 4), 9))
 		}),
-		level:  NewLevel(),
+		level:  level,
+		player: NewPlayer(level),
 		fruits: make([]*Fruit, 0, 10),
 		pops:   make([]*Pop, 0, 10),
 	}
@@ -67,6 +71,8 @@ func (g *Game) Start() *Game {
 	g.timer = -1
 	g.level = NewLevel()
 	g.level.Next()
+
+	g.player.Start(g.level)
 
 	g.state = StatePlaying
 	return g
@@ -119,11 +125,29 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		}
 
 		for _, fruit := range g.fruits {
-			expired := fruit.Update()
-			if expired {
-				g.StartPop(PopFruit, fruit.sprite.X(XCentre), fruit.sprite.Y(YBottom))
+			fruit.Update(g)
+		}
+
+		dx := 0.0
+		// player actions
+		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+			dx = -1
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyRight) {
+			dx = 1
+		}
+		if dx != 0 {
+			g.player.Move(dx, 0, PlayerDefaultSpeed)
+		} else {
+			g.player.Still()
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+			if g.player.Jump() {
+				g.SoundEffect(sounds[soundJump])
 			}
 		}
+		g.player.Update(g)
+
 		return nil
 	}
 
@@ -170,6 +194,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			fruit.Draw(screen, g.timer)
 		}
 
+		g.player.Draw(screen)
+
 	case StateGameOver:
 	}
 
@@ -181,6 +207,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 // SoundEffect plays a sound in the game
 func (g *Game) SoundEffect(se []byte) {
 	PlaySE(g.audioContext, se)
+}
+
+// RandomSoundEffect plays a random sound effect from a list
+func (g *Game) RandomSoundEffect(sounds [][]byte) {
+	if sounds == nil || len(sounds) == 0 {
+		return
+	}
+	soundID := rand.Intn(len(sounds))
+	PlaySE(g.audioContext, sounds[soundID])
 }
 
 func (g *Game) GenerateFruit(extra bool) {

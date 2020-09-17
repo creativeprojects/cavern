@@ -86,22 +86,31 @@ func (f *Fruit) Generate(extra bool) {
 		Animate(f.Animation[f.Type], fruitAnimation, 6, true)
 }
 
-// Update returns true when the fruit just expired (and needs an animation)
-func (f *Fruit) Update() bool {
+// Update fruit gravity, expiration, and collision with player
+func (f *Fruit) Update(game *Game) {
 	if f.HasExpired() {
-		return false
+		return
 	}
 	f.sprite.Update()
 	f.TTL--
 	if f.TTL == 0 {
 		// create pop animation
-		return true
+		game.StartPop(PopFruit, f.sprite.X(XCentre), f.sprite.Y(YBottom))
+		return
+	}
+	if game.player.sprite.CollidePoint(f.sprite.X(XCentre), f.sprite.Y(YCentre)) {
+		f.TTL = 0
+		if f.Type >= ExtraHealth {
+			game.SoundEffect(sounds[soundBonus])
+		} else {
+			game.SoundEffect(sounds[soundScore])
+		}
 	}
 	if f.landed {
-		return false
+		return
 	}
 	f.UpdateFall()
-	return false
+	return
 }
 
 func (f *Fruit) Draw(screen *ebiten.Image, timer float64) {
