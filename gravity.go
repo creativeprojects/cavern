@@ -25,7 +25,7 @@ func (g *Gravity) UpdateFall() bool {
 	if g.speedY <= 0 {
 		dy = -1.0
 	}
-	moved := g.Move(0, dy, math.Abs(g.speedY))
+	moved := g.CollideMove(0, dy, math.Abs(g.speedY))
 	if moved {
 		g.landed = false
 	} else {
@@ -37,9 +37,9 @@ func (g *Gravity) UpdateFall() bool {
 		}
 		return false
 	}
-	if g.sprite.Y(YTop) >= WindowHeight {
+	if g.Y(YTop) >= WindowHeight {
 		// fallen off the bottom, reappear at the top
-		g.sprite.MoveTo(g.sprite.x, g.sprite.y-WindowHeight)
+		g.MoveTo(g.x, g.y-WindowHeight)
 	}
 	return false
 }
@@ -49,5 +49,5 @@ func (g *Gravity) UpdateFreeFall() {
 	// Apply gravity, without going over the maximum fall speed
 	g.speedY = math.Min(g.speedY+1, MaxFallSpeed)
 	// collision detection disabled
-	g.sprite.Move(0, g.speedY)
+	g.Move(0, g.speedY)
 }

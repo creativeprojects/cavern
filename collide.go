@@ -4,21 +4,21 @@ import "math"
 
 // Collide manages collision between a sprite and a grid
 type Collide struct {
-	level  *Level
-	sprite *Sprite
+	*Sprite
+	level *Level
 }
 
 // NewCollide creates a new collision detection between a sprite and a grid
 func NewCollide(level *Level, sprite *Sprite) *Collide {
 	return &Collide{
+		Sprite: sprite,
 		level:  level,
-		sprite: sprite,
 	}
 }
 
-// Move sets the new position, and returns true if the move was successful (returns false if there was a wall)
-func (c *Collide) Move(dx, dy, speed float64) bool {
-	newX, newY := c.sprite.X(XCentre), c.sprite.Y(YBottom)
+// CollideMove sets the new position, and returns true if the move was successful (returns false if there was a wall)
+func (c *Collide) CollideMove(dx, dy, speed float64) bool {
+	newX, newY := c.X(XCentre), c.Y(YBottom)
 
 	// movement is done 1 pixel at a time
 	for i := 0; i < int(speed); i++ {
@@ -36,7 +36,7 @@ func (c *Collide) Move(dx, dy, speed float64) bool {
 			return false
 		}
 		// register the move
-		c.sprite.MoveToType(newX, newY, XCentre, YBottom)
+		c.MoveToType(newX, newY, XCentre, YBottom)
 	}
 	return true
 }

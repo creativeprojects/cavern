@@ -81,7 +81,7 @@ func (f *Fruit) Generate(extra bool) {
 	f.Type = fruitType
 	f.landed = false
 	f.TTL = FruitTTL
-	f.sprite.
+	f.
 		MoveTo(float64(randomInt(70, 730)), float64(randomInt(75, 400))).
 		Animate(f.Animation[f.Type], fruitAnimation, 6, true)
 }
@@ -91,20 +91,21 @@ func (f *Fruit) Update(game *Game) {
 	if f.HasExpired() {
 		return
 	}
-	f.sprite.Update()
+	f.Sprite.Update()
 	f.TTL--
 	if f.TTL == 0 {
 		// create pop animation
-		game.StartPop(PopFruit, f.sprite.X(XCentre), f.sprite.Y(YBottom))
+		game.StartPop(PopFruit, f.X(XCentre), f.Y(YBottom))
 		return
 	}
-	if game.player.sprite.CollidePoint(f.sprite.X(XCentre), f.sprite.Y(YCentre)) {
+	if game.player.sprite.CollidePoint(f.X(XCentre), f.Y(YCentre)) {
 		f.TTL = 0
 		if f.Type >= ExtraHealth {
 			game.SoundEffect(sounds[soundBonus])
 		} else {
 			game.SoundEffect(sounds[soundScore])
 		}
+		game.player.Eat(f.Type)
 	}
 	if f.landed {
 		return
@@ -117,7 +118,7 @@ func (f *Fruit) Draw(screen *ebiten.Image, timer float64) {
 	if f.HasExpired() {
 		return
 	}
-	f.sprite.Draw(screen)
+	f.Sprite.Draw(screen)
 }
 
 // HasExpired returns true when TTL is down to zero meaning the fruit is no longer displayed

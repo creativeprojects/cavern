@@ -25,6 +25,7 @@ type Game struct {
 	player       *Player
 	fruits       []*Fruit
 	pops         []*Pop
+	orbs         []*Orb
 }
 
 // NewGame creates a new game instance and prepares a demo AI game
@@ -56,6 +57,7 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 		player: NewPlayer(level),
 		fruits: make([]*Fruit, 0, 10),
 		pops:   make([]*Pop, 0, 10),
+		orbs:   make([]*Orb, MaxOrbs),
 	}
 
 	return g, nil
@@ -73,6 +75,11 @@ func (g *Game) Start() *Game {
 	g.level.Next()
 
 	g.player.Start(g.level)
+
+	// create Orbs
+	for i := 0; i < MaxOrbs; i++ {
+		g.orbs[i] = NewOrb(g.level)
+	}
 
 	g.state = StatePlaying
 	return g
@@ -128,6 +135,12 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			fruit.Update(g)
 		}
 
+		for _, orb := range g.orbs {
+			if orb.IsActive() {
+				orb.Update(g)
+			}
+		}
+
 		dx := 0.0
 		// player actions
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
@@ -145,6 +158,15 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			if g.player.Jump() {
 				g.SoundEffect(sounds[soundJump])
 			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			g.player.StartBlowing(g)
+		}
+		if inpututil.KeyPressDuration(ebiten.KeySpace) > 1 && inpututil.KeyPressDuration(ebiten.KeySpace) <= MaxBlowingTime {
+			g.player.Blowing(g)
+		}
+		if inpututil.IsKeyJustReleased(ebiten.KeySpace) || inpututil.KeyPressDuration(ebiten.KeySpace) > MaxBlowingTime {
+			g.player.StopBlowing(g)
 		}
 		g.player.Update(g)
 
@@ -192,6 +214,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 		for _, fruit := range g.fruits {
 			fruit.Draw(screen, g.timer)
+		}
+
+		for _, orb := range g.orbs {
+			if orb.IsActive() {
+				orb.Draw(screen)
+			}
 		}
 
 		g.player.Draw(screen)
@@ -243,14 +271,26 @@ func (g *Game) StartPop(popType PopType, x, y float64) {
 	g.pops = append(g.pops, pop)
 }
 
+// NewOrb creates a new orb
+func (g *Game) NewOrb() *Orb {
+	// assign an inactive Orb
+	for _, orb := range g.orbs {
+		if !orb.IsActive() {
+			return orb.Reset()
+		}
+	}
+	return nil
+}
+
 func (g *Game) displayDebug(screen *ebiten.Image) {
-	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d \n"
+	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d \n Player %s \n"
 	msg := fmt.Sprintf(template,
 		ebiten.CurrentTPS(),
 		g.level.id,
 		g.level.colour,
 		len(g.fruits),
 		len(g.pops),
+		g.player,
 	)
 	ebitenutil.DebugPrint(screen, msg)
 
