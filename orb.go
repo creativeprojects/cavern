@@ -9,6 +9,7 @@ import (
 type Orb struct {
 	*Collide
 	blowImages       []*ebiten.Image
+	trapImages       [2][]*ebiten.Image
 	direction        float64
 	active           bool
 	floating         bool
@@ -22,6 +23,10 @@ func NewOrb(level *Level) *Orb {
 		Collide: NewCollide(level, NewSprite(XCentre, YBottom)),
 		blowImages: []*ebiten.Image{images["orb0"], images["orb1"], images["orb2"],
 			images["orb3"], images["orb4"], images["orb5"], images["orb6"]},
+		trapImages: [2][]*ebiten.Image{
+			{images["trap00"], images["trap01"], images["trap02"], images["trap03"], images["trap04"], images["trap05"], images["trap06"], images["trap07"]},
+			{images["trap10"], images["trap11"], images["trap12"], images["trap13"], images["trap14"], images["trap15"], images["trap16"], images["trap17"]},
+		},
 	}
 }
 
@@ -48,6 +53,16 @@ func (o *Orb) Blow() {
 
 func (o *Orb) IsActive() bool {
 	return o.active
+}
+
+func (o *Orb) TrapEnemy(robotType RobotType) {
+	o.trappedEnemyType = robotType
+	o.floating = true
+	o.SetSequenceFunc(nil).Animate(o.trapImages[robotType-1], nil, 4, true)
+}
+
+func (o *Orb) EnemyTrapped() bool {
+	return o.trappedEnemyType > RobotNone
 }
 
 func (o *Orb) Update(game *Game) {

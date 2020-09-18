@@ -56,6 +56,10 @@ func (r *Robot) Generate(robotType RobotType) *Robot {
 	return r
 }
 
+func (r *Robot) IsAlive() bool {
+	return r.alive
+}
+
 func (r *Robot) Update(game *Game) {
 	r.changeDirectionTimer--
 	r.fireTimer++
@@ -79,10 +83,9 @@ func (r *Robot) Update(game *Game) {
 
 	// am I colliding with an Orb? if so, become trapped in it
 	for _, orb := range game.orbs {
-		if orb.trappedEnemyType == RobotNone && r.CollidePoint(orb.X(XCentre), orb.Y(YCentre)) {
+		if !orb.EnemyTrapped() && r.CollidePoint(orb.X(XCentre), orb.Y(YCentre)) {
 			r.alive = false
-			orb.floating = true
-			orb.trappedEnemyType = r.robotType
+			orb.TrapEnemy(r.robotType)
 			game.RandomSoundEffect(r.trapSounds)
 			// no need to go further
 			return

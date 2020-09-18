@@ -77,6 +77,11 @@ func init() {
 			}
 		}
 	}
+	for i := 0; i <= 1; i++ {
+		for j := 0; j <= 7; j++ {
+			imageNames = append(imageNames, fmt.Sprintf("trap%d%d", i, j))
+		}
+	}
 	// sounds
 	for i := 0; i <= 3; i++ {
 		soundNames = append(soundNames, fmt.Sprintf("land%d", i))

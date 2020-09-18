@@ -149,5 +149,4 @@ func (l *Level) createPendingEnemies() {
 	rand.Shuffle(len(l.pendingEnemies), func(i, j int) {
 		l.pendingEnemies[i], l.pendingEnemies[j] = l.pendingEnemies[j], l.pendingEnemies[i]
 	})
-	fmt.Printf("%+v\n", l.pendingEnemies)
 }

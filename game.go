@@ -12,6 +12,11 @@ import (
 	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
+var (
+	CharWidth = []int{27, 26, 25, 26, 25, 25, 26, 25, 12, 26, 26, 25, 33, 25, 26,
+		25, 27, 26, 26, 25, 26, 26, 38, 25, 25, 25}
+)
+
 // Game contains the current game state
 type Game struct {
 	audioContext *audio.Context
@@ -27,6 +32,7 @@ type Game struct {
 	pops         []*Pop
 	orbs         []*Orb
 	robots       []*Robot
+	bolts        []*Bolt
 }
 
 // NewGame creates a new game instance and prepares a demo AI game
@@ -59,6 +65,8 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 		fruits: make([]*Fruit, 0, 10),
 		pops:   make([]*Pop, 0, 10),
 		orbs:   make([]*Orb, MaxOrbs),
+		robots: make([]*Robot, 0, 10),
+		bolts:  make([]*Bolt, 0, 10),
 	}
 
 	return g, nil
@@ -127,7 +135,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		// count the enemies in game
 		enemyCount := 0
 		for _, robot := range g.robots {
-			if robot.alive {
+			if robot.IsAlive() {
 				enemyCount++
 			}
 		}
@@ -152,6 +160,10 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			fruit.Update(g)
 		}
 
+		for _, bolt := range g.bolts {
+			bolt.Update(g)
+		}
+
 		for _, orb := range g.orbs {
 			if orb.IsActive() {
 				orb.Update(g)
@@ -159,7 +171,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		}
 
 		for _, robot := range g.robots {
-			if robot.alive {
+			if robot.IsAlive() {
 				robot.Update(g)
 			}
 		}
@@ -233,6 +245,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 		for _, fruit := range g.fruits {
 			fruit.Draw(screen, g.timer)
+		}
+
+		for _, bolt := range g.bolts {
+			bolt.Draw(screen)
 		}
 
 		for _, pop := range g.pops {
@@ -323,13 +339,15 @@ func (g *Game) NewOrb() *Orb {
 }
 
 func (g *Game) displayDebug(screen *ebiten.Image) {
-	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d \n Player %s \n"
+	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d \n Player %s \n"
 	msg := fmt.Sprintf(template,
 		ebiten.CurrentTPS(),
 		g.level.id,
 		g.level.colour,
 		len(g.fruits),
 		len(g.pops),
+		len(g.orbs),
+		len(g.robots),
 		g.player,
 	)
 	ebitenutil.DebugPrint(screen, msg)
