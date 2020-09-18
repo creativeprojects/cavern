@@ -15,6 +15,8 @@ const (
 	imagePlayerStill = "still"
 	imageJumpLeft    = "jump0"
 	imageJumpRight   = "jump1"
+	imageBlowLeft    = "blow0"
+	imageBlowRight   = "blow1"
 
 	soundLevel = "level0"
 	soundJump  = "jump0"
@@ -30,6 +32,8 @@ var (
 		imagePlayerStill,
 		imageJumpLeft,
 		imageJumpRight,
+		imageBlowLeft,
+		imageBlowRight,
 	}
 	soundNames = []string{
 		soundLevel,
@@ -66,10 +70,18 @@ func init() {
 			imageNames = append(imageNames, fmt.Sprintf("run%d%d", i, j))
 		}
 	}
+	for i := 0; i <= 1; i++ {
+		for j := 0; j <= 1; j++ {
+			for k := 0; k <= 7; k++ {
+				imageNames = append(imageNames, fmt.Sprintf("robot%d%d%d", i, j, k))
+			}
+		}
+	}
 	// sounds
 	for i := 0; i <= 3; i++ {
 		soundNames = append(soundNames, fmt.Sprintf("land%d", i))
 		// soundNames = append(soundNames, fmt.Sprintf("blow%d", i))
+		soundNames = append(soundNames, fmt.Sprintf("trap%d", i))
 	}
 	soundNames = append(soundNames, "blow0")
 	soundNames = append(soundNames, "blow2")

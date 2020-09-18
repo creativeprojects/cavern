@@ -26,6 +26,7 @@ type Game struct {
 	fruits       []*Fruit
 	pops         []*Pop
 	orbs         []*Orb
+	robots       []*Robot
 }
 
 // NewGame creates a new game instance and prepares a demo AI game
@@ -123,8 +124,24 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			}
 		}
 
-		if math.Mod(g.timer, NewFruitEvery) == 0 {
-			g.GenerateFruit(true)
+		// count the enemies in game
+		enemyCount := 0
+		for _, robot := range g.robots {
+			if robot.alive {
+				enemyCount++
+			}
+		}
+		pendingEnemyCount := g.level.PendingEnemies()
+
+		if pendingEnemyCount > 0 && enemyCount < g.level.MaxEnemies() && math.Mod(g.timer, NewEnemyRate) == 0 {
+			robotType := g.level.NextEnemy()
+			if robotType > RobotNone {
+				g.CreateRobot(robotType)
+			}
+		}
+
+		if pendingEnemyCount+enemyCount > 0 && math.Mod(g.timer, NewFruitRate) == 0 {
+			g.CreateFruit(true)
 		}
 
 		for _, pop := range g.pops {
@@ -138,6 +155,12 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		for _, orb := range g.orbs {
 			if orb.IsActive() {
 				orb.Update(g)
+			}
+		}
+
+		for _, robot := range g.robots {
+			if robot.alive {
+				robot.Update(g)
 			}
 		}
 
@@ -208,12 +231,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	case StatePlaying:
 		g.level.Draw(screen)
 
+		for _, fruit := range g.fruits {
+			fruit.Draw(screen, g.timer)
+		}
+
 		for _, pop := range g.pops {
 			pop.Draw(screen)
 		}
 
-		for _, fruit := range g.fruits {
-			fruit.Draw(screen, g.timer)
+		for _, robot := range g.robots {
+			if robot.alive {
+				robot.Draw(screen)
+			}
 		}
 
 		for _, orb := range g.orbs {
@@ -246,7 +275,7 @@ func (g *Game) RandomSoundEffect(sounds [][]byte) {
 	PlaySE(g.audioContext, sounds[soundID])
 }
 
-func (g *Game) GenerateFruit(extra bool) {
+func (g *Game) CreateFruit(extra bool) {
 	// find a free fruit
 	for _, fruit := range g.fruits {
 		if fruit.TTL == 0 {
@@ -255,6 +284,17 @@ func (g *Game) GenerateFruit(extra bool) {
 		}
 	}
 	g.fruits = append(g.fruits, NewFruit(g.level, true))
+}
+
+func (g *Game) CreateRobot(robotType RobotType) {
+	// find a dead robot
+	for _, robot := range g.robots {
+		if !robot.alive {
+			robot.Generate(robotType)
+			return
+		}
+	}
+	g.robots = append(g.robots, NewRobot(g.level).Generate(robotType))
 }
 
 func (g *Game) StartPop(popType PopType, x, y float64) {

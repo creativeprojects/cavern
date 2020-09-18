@@ -15,6 +15,8 @@ type Player struct {
 	runRight      []*ebiten.Image
 	jumpLeft      *ebiten.Image
 	jumpRight     *ebiten.Image
+	blowLeft      *ebiten.Image
+	blowRight     *ebiten.Image
 	landingSounds [][]byte
 	blowSounds    [][]byte
 	lives         int
@@ -39,6 +41,8 @@ func NewPlayer(level *Level) *Player {
 		runRight:      []*ebiten.Image{images["run10"], images["run11"], images["run12"], images["run13"]},
 		jumpLeft:      images[imageJumpLeft],
 		jumpRight:     images[imageJumpRight],
+		blowLeft:      images[imageBlowLeft],
+		blowRight:     images[imageBlowRight],
 		landingSounds: [][]byte{sounds["land0"], sounds["land1"], sounds["land2"], sounds["land3"]},
 		blowSounds:    [][]byte{sounds["blow0"] /*sounds["blow1"],*/, sounds["blow2"], sounds["blow3"]},
 		lives:         PlayerStartLives,
@@ -79,6 +83,10 @@ func (p *Player) Update(game *Game) {
 		}
 	}
 	switch {
+	case p.blowingOrb != nil && p.direction == -1:
+		p.sprite.Animation([]*ebiten.Image{p.blowLeft}, nil, 8, true)
+	case p.blowingOrb != nil:
+		p.sprite.Animation([]*ebiten.Image{p.blowRight}, nil, 8, true)
 	case !p.gravity.landed && p.movingX < 0:
 		p.sprite.Animation([]*ebiten.Image{p.jumpLeft}, nil, 8, true)
 

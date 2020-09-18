@@ -11,7 +11,8 @@ const (
 	LeftGridOffset             = 50.0
 	GridBlockSize              = 25.0
 	MaxFallSpeed               = 10.0
-	NewFruitEvery              = 100
+	NewFruitRate               = 100
+	NewEnemyRate               = 81
 	FruitTTL                   = 500 // this will keep 5 fruits maximum at all time
 	GameNormalSpeed            = 60
 	GameSlowSpeed              = 20
