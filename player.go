@@ -7,6 +7,22 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
+type IconType int
+
+const (
+	IconLife IconType = iota
+	IconPlus
+	IconHealth
+)
+
+var (
+	iconWidths = []float64{
+		44,
+		40,
+		40,
+	}
+)
+
 type Player struct {
 	sprite        *Sprite
 	gravity       *Gravity
@@ -17,6 +33,7 @@ type Player struct {
 	jumpRight     *ebiten.Image
 	blowLeft      *ebiten.Image
 	blowRight     *ebiten.Image
+	iconImages    [3]*ebiten.Image
 	landingSounds [][]byte
 	blowSounds    [][]byte
 	lives         int
@@ -43,6 +60,7 @@ func NewPlayer(level *Level) *Player {
 		jumpRight:     images[imageJumpRight],
 		blowLeft:      images[imageBlowLeft],
 		blowRight:     images[imageBlowRight],
+		iconImages:    [3]*ebiten.Image{images["life"], images["plus"], images["health"]},
 		landingSounds: [][]byte{sounds["land0"], sounds["land1"], sounds["land2"], sounds["land3"]},
 		blowSounds:    [][]byte{sounds["blow0"] /*sounds["blow1"],*/, sounds["blow2"], sounds["blow3"]},
 		lives:         PlayerStartLives,
@@ -109,6 +127,36 @@ func (p *Player) Update(game *Game) {
 // Draw the player on the screen
 func (p *Player) Draw(screen *ebiten.Image) {
 	p.sprite.Draw(screen)
+
+	// Draw player score
+	scoreBytes := []byte(fmt.Sprintf("%d", p.score))
+	DrawText(screen, scoreBytes, float64(WindowWidth-2-(CharWidth(0)*len(scoreBytes))), 451)
+
+	// Draw player score
+	p.DrawHealth(screen)
+}
+
+func (p *Player) DrawHealth(screen *ebiten.Image) {
+	icons := make([]IconType, 0, 6)
+	switch {
+	case p.lives == 1:
+		icons = append(icons, IconLife)
+	case p.lives == 2:
+		icons = append(icons, IconLife, IconLife)
+	case p.lives > 2:
+		icons = append(icons, IconLife, IconLife, IconPlus)
+	}
+	for i := 0; i < p.health; i++ {
+		icons = append(icons, IconHealth)
+	}
+	x := 0.0
+	op := &ebiten.DrawImageOptions{}
+	for _, icon := range icons {
+		op.GeoM.Reset()
+		op.GeoM.Translate(x, 450)
+		screen.DrawImage(p.iconImages[icon], op)
+		x += iconWidths[icon]
+	}
 }
 
 func (p *Player) Move(x, y, speed float64) {

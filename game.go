@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"log"
 	"math"
 	"math/rand"
 
@@ -13,7 +14,7 @@ import (
 )
 
 var (
-	CharWidth = []int{27, 26, 25, 26, 25, 25, 26, 25, 12, 26, 26, 25, 33, 25, 26,
+	CharWidths = []int{27, 26, 25, 26, 25, 25, 26, 25, 12, 26, 26, 25, 33, 25, 26,
 		25, 27, 26, 26, 25, 26, 26, 38, 25, 25, 25}
 )
 
@@ -356,4 +357,41 @@ func (g *Game) displayDebug(screen *ebiten.Image) {
 	ebitenutil.DrawLine(screen, 730, 75, 730, 400, color.White)
 	ebitenutil.DrawLine(screen, 70, 75, 730, 75, color.White)
 	ebitenutil.DrawLine(screen, 70, 400, 730, 400, color.White)
+}
+
+// CharWidth returns width of given character. For characters other than the letters A to Z (i.e. space, and the digits 0 to 9),
+// the width of the letter A is returned.
+func CharWidth(char byte) int {
+	i := int(char) - 65
+	if i < 0 {
+		i = 0
+	}
+	if i >= len(CharWidths) {
+		log.Printf("character '%c'(%d) not in font", char, char)
+	}
+	return CharWidths[i]
+}
+
+func DrawTextCentre(screen *ebiten.Image, text []byte, y float64) {
+	width := 0
+	for _, c := range text {
+		width += CharWidth(c)
+	}
+	x := (WindowWidth - width) / 2
+	DrawText(screen, text, float64(x), y)
+}
+
+func DrawText(screen *ebiten.Image, text []byte, x, y float64) {
+	op := &ebiten.DrawImageOptions{}
+	for _, char := range text {
+		image := images[fmt.Sprintf("font0%d", char)]
+		if image == nil {
+			log.Printf("character '%c'(%d) not available in font", char, char)
+			return
+		}
+		op.GeoM.Reset()
+		op.GeoM.Translate(x, y)
+		screen.DrawImage(image, op)
+		x += float64(CharWidth(char))
+	}
 }

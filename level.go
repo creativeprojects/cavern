@@ -72,6 +72,8 @@ func (l *Level) Draw(screen *ebiten.Image) {
 			x += GridBlockSize
 		}
 	}
+	// Level
+	DrawTextCentre(screen, []byte(fmt.Sprintf("LEVEL %d", l.id+1)), 451)
 }
 
 // Block returns true if there's a grid block at these coordinates
@@ -102,7 +104,6 @@ func (l *Level) NextEnemy() RobotType {
 	}
 	enemy := l.pendingEnemies[0]
 	l.pendingEnemies = l.pendingEnemies[1:]
-	fmt.Printf("%+v\n", l.pendingEnemies)
 	return enemy
 }
 

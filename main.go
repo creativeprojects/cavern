@@ -17,6 +17,9 @@ const (
 	imageJumpRight   = "jump1"
 	imageBlowLeft    = "blow0"
 	imageBlowRight   = "blow1"
+	imageLife        = "life"
+	imageHealth      = "health"
+	imagePlus        = "plus"
 
 	soundLevel = "level0"
 	soundJump  = "jump0"
@@ -34,6 +37,9 @@ var (
 		imageJumpRight,
 		imageBlowLeft,
 		imageBlowRight,
+		imageLife,
+		imageHealth,
+		imagePlus,
 	}
 	soundNames = []string{
 		soundLevel,
@@ -82,6 +88,15 @@ func init() {
 			imageNames = append(imageNames, fmt.Sprintf("trap%d%d", i, j))
 		}
 	}
+	// font images
+	imageNames = append(imageNames, fmt.Sprintf("font032"))
+	for i := 48; i <= 57; i++ {
+		imageNames = append(imageNames, fmt.Sprintf("font0%d", i))
+	}
+	for i := 65; i <= 90; i++ {
+		imageNames = append(imageNames, fmt.Sprintf("font0%d", i))
+	}
+
 	// sounds
 	for i := 0; i <= 3; i++ {
 		soundNames = append(soundNames, fmt.Sprintf("land%d", i))
