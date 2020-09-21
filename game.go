@@ -150,7 +150,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		}
 
 		if pendingEnemyCount+enemyCount > 0 && math.Mod(g.timer, NewFruitRate) == 0 {
-			g.CreateFruit(true)
+			g.CreateFruit(false)
 		}
 
 		for _, pop := range g.pops {
@@ -292,15 +292,17 @@ func (g *Game) RandomSoundEffect(sounds [][]byte) {
 	PlaySE(g.audioContext, sounds[soundID])
 }
 
-func (g *Game) CreateFruit(extra bool) {
+func (g *Game) CreateFruit(extra bool) *Fruit {
 	// find a free fruit
 	for _, fruit := range g.fruits {
 		if fruit.TTL == 0 {
-			fruit.Generate(true)
-			return
+			fruit.Generate(extra)
+			return fruit
 		}
 	}
-	g.fruits = append(g.fruits, NewFruit(g.level, true))
+	fruit := NewFruit(g.level, extra)
+	g.fruits = append(g.fruits, fruit)
+	return fruit
 }
 
 func (g *Game) CreateRobot(robotType RobotType) {
@@ -339,8 +341,20 @@ func (g *Game) NewOrb() *Orb {
 	return nil
 }
 
+func (g *Game) Fire(directionX, x, y float64) {
+	// reuse an existing bolt
+	for _, bolt := range g.bolts {
+		if !bolt.active {
+			bolt.Fire(directionX, x, y)
+			return
+		}
+	}
+	// otherwise create a new one
+	g.bolts = append(g.bolts, NewBolt(g.level).Fire(directionX, x, y))
+}
+
 func (g *Game) displayDebug(screen *ebiten.Image) {
-	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d \n Player %s \n"
+	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d - Bolts %d \n Player %s \n"
 	msg := fmt.Sprintf(template,
 		ebiten.CurrentTPS(),
 		g.level.id,
@@ -349,6 +363,7 @@ func (g *Game) displayDebug(screen *ebiten.Image) {
 		len(g.pops),
 		len(g.orbs),
 		len(g.robots),
+		len(g.bolts),
 		g.player,
 	)
 	ebitenutil.DebugPrint(screen, msg)

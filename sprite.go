@@ -18,6 +18,17 @@ const (
 	XRight
 )
 
+func (x XType) String() string {
+	switch x {
+	case XCentre:
+		return "X center"
+	case XRight:
+		return "X right"
+	default:
+		return "X left"
+	}
+}
+
 // YType represents the type of the Y coordinate (centre, top or bottom)
 type YType int
 
@@ -27,6 +38,17 @@ const (
 	YCentre
 	YBottom
 )
+
+func (y YType) String() string {
+	switch y {
+	case YCentre:
+		return "Y center"
+	case YBottom:
+		return "Y bottom"
+	default:
+		return "Y top"
+	}
+}
 
 // SequenceFunc is used as a callback to decide which image to draw
 type SequenceFunc func(int) int
@@ -194,12 +216,15 @@ func (s *Sprite) MoveToType(x, y float64, xType XType, yType YType) *Sprite {
 	if s.xType == xType {
 		s.x = x
 	} else {
-		panic("mixing different types of coordinates is not yet supported")
+		panic(fmt.Sprintf("mixing different types of coordinates is not yet supported: want to set %s but is %s", xType.String(), s.xType.String()))
 	}
 	if s.yType == yType {
 		s.y = y
+	} else if s.yType == YCentre && yType == YBottom {
+		_, height := s.image.Size()
+		s.y = y - (float64(height) / 2)
 	} else {
-		panic("mixing different types of coordinates is not yet supported")
+		panic(fmt.Sprintf("mixing different types of coordinates is not yet supported: want to set %s but is %s", yType.String(), s.yType.String()))
 	}
 	return s
 }

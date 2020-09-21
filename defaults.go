@@ -24,4 +24,5 @@ const (
 	MaxBlowingTime             = 30
 	OrbMaxTimer                = 250
 	OrbFireTimer               = 20
+	BoltSpeed                  = 7.0
 )

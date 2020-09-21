@@ -88,6 +88,11 @@ func init() {
 			imageNames = append(imageNames, fmt.Sprintf("trap%d%d", i, j))
 		}
 	}
+	for i := 0; i <= 1; i++ {
+		for j := 0; j <= 1; j++ {
+			imageNames = append(imageNames, fmt.Sprintf("bolt%d%d", i, j))
+		}
+	}
 	// font images
 	imageNames = append(imageNames, fmt.Sprintf("font032"))
 	for i := 48; i <= 57; i++ {
@@ -102,6 +107,8 @@ func init() {
 		soundNames = append(soundNames, fmt.Sprintf("land%d", i))
 		// soundNames = append(soundNames, fmt.Sprintf("blow%d", i))
 		soundNames = append(soundNames, fmt.Sprintf("trap%d", i))
+		soundNames = append(soundNames, fmt.Sprintf("laser%d", i))
+		soundNames = append(soundNames, fmt.Sprintf("pop%d", i))
 	}
 	soundNames = append(soundNames, "blow0")
 	soundNames = append(soundNames, "blow2")

@@ -10,6 +10,7 @@ type Orb struct {
 	*Collide
 	blowImages       []*ebiten.Image
 	trapImages       [2][]*ebiten.Image
+	popSounds        [][]byte
 	direction        float64
 	active           bool
 	floating         bool
@@ -27,6 +28,7 @@ func NewOrb(level *Level) *Orb {
 			{images["trap00"], images["trap01"], images["trap02"], images["trap03"], images["trap04"], images["trap05"], images["trap06"], images["trap07"]},
 			{images["trap10"], images["trap11"], images["trap12"], images["trap13"], images["trap14"], images["trap15"], images["trap16"], images["trap17"]},
 		},
+		popSounds: [][]byte{sounds["pop0"], sounds["pop1"], sounds["pop2"], sounds["pop3"]},
 	}
 }
 
@@ -65,6 +67,15 @@ func (o *Orb) EnemyTrapped() bool {
 	return o.trappedEnemyType > RobotNone
 }
 
+// Hit tests if the coordinates collide with us and returns yes if it does
+func (o *Orb) Hit(x, y float64) bool {
+	collided := o.CollidePoint(x, y)
+	if collided {
+		o.timer = OrbMaxTimer - 1
+	}
+	return collided
+}
+
 func (o *Orb) Update(game *Game) {
 	if !o.active {
 		return
@@ -82,9 +93,14 @@ func (o *Orb) Update(game *Game) {
 	if o.timer == o.blownFrames {
 		o.floating = true
 	}
-	if o.timer > OrbMaxTimer {
+	if o.timer > OrbMaxTimer || o.Y(YBottom) <= -40 {
 		o.active = false
 		game.StartPop(PopOrb, o.X(XCentre), o.Y(YBottom))
+		if o.trappedEnemyType > RobotNone {
+			fruit := game.CreateFruit(true)
+			fruit.MoveTo(o.X(XCentre), o.Y(YBottom))
+			game.RandomSoundEffect(o.popSounds)
+		}
 		return
 	}
 	o.Sprite.Update()

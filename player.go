@@ -86,6 +86,12 @@ func (p *Player) Start(level *Level) *Player {
 	return p
 }
 
+// Hit tests if the coordinates collide with us and returns yes if it does
+func (p *Player) Hit(x, y float64) bool {
+	collided := p.sprite.CollidePoint(x, y)
+	return collided
+}
+
 func (p *Player) Update(game *Game) {
 	if p.fireTimer > 0 {
 		p.fireTimer--

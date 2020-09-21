@@ -52,7 +52,7 @@ func NewFruit(level *Level, extra bool) *Fruit {
 	return f
 }
 
-func (f *Fruit) Generate(extra bool) {
+func (f *Fruit) Generate(extra bool) *Fruit {
 	var fruitType FruitType
 	if !extra {
 		fruitType = FruitType(rand.Intn(2))
@@ -84,6 +84,7 @@ func (f *Fruit) Generate(extra bool) {
 	f.
 		MoveTo(float64(randomInt(70, 730)), float64(randomInt(75, 400))).
 		Animate(f.Animation[f.Type], fruitAnimation, 6, true)
+	return f
 }
 
 // Update fruit gravity, expiration, and collision with player
