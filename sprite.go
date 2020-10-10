@@ -191,7 +191,7 @@ func (s *Sprite) SetSequenceFunc(sequenceFunc SequenceFunc) *Sprite {
 	return s
 }
 
-// IsFinished returns true when the animation has finished.
+// IsFinished returns true when the *Sprite animation has finished.
 // An animation with loop = true will never finish
 func (s *Sprite) IsFinished() bool {
 	return !s.started

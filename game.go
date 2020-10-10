@@ -245,7 +245,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.level.Draw(screen)
 
 		for _, fruit := range g.fruits {
-			fruit.Draw(screen, g.timer)
+			if !fruit.HasExpired() {
+				fruit.Draw(screen, g.timer)
+			}
 		}
 
 		for _, bolt := range g.bolts {
@@ -257,7 +259,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 
 		for _, robot := range g.robots {
-			if robot.alive {
+			if robot.IsAlive() {
 				robot.Draw(screen)
 			}
 		}
@@ -295,7 +297,7 @@ func (g *Game) RandomSoundEffect(sounds [][]byte) {
 func (g *Game) CreateFruit(extra bool) *Fruit {
 	// find a free fruit
 	for _, fruit := range g.fruits {
-		if fruit.TTL == 0 {
+		if fruit.HasExpired() {
 			fruit.Generate(extra)
 			return fruit
 		}
@@ -308,7 +310,7 @@ func (g *Game) CreateFruit(extra bool) *Fruit {
 func (g *Game) CreateRobot(robotType RobotType) {
 	// find a dead robot
 	for _, robot := range g.robots {
-		if !robot.alive {
+		if !robot.IsAlive() {
 			robot.Generate(robotType)
 			return
 		}
@@ -344,7 +346,7 @@ func (g *Game) NewOrb() *Orb {
 func (g *Game) Fire(directionX, x, y float64) {
 	// reuse an existing bolt
 	for _, bolt := range g.bolts {
-		if !bolt.active {
+		if !bolt.IsActive() {
 			bolt.Fire(directionX, x, y)
 			return
 		}
