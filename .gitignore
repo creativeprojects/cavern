@@ -1,3 +1,5 @@
 .DS_Store
 /cavern
 /pkged.go
+/wasm/cavern.wasm
+/wasm/wasm_exec.js
