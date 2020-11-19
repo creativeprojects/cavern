@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type IconType int

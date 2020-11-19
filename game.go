@@ -7,10 +7,10 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/audio"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var (
@@ -102,7 +102,7 @@ func (g *Game) NextLevel() {
 }
 
 // Update game events
-func (g *Game) Update(screen *ebiten.Image) error {
+func (g *Game) Update() error {
 	g.timer++
 
 	// Debug

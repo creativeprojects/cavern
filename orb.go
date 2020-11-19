@@ -3,7 +3,7 @@ package main
 import (
 	"math"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Orb struct {

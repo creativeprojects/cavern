@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type RobotType int

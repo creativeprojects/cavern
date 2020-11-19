@@ -3,7 +3,7 @@ package main
 import (
 	"math/rand"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 const (

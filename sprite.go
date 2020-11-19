@@ -5,7 +5,7 @@ import (
 	"log"
 	"math"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 // XType represents the type of the X coordinate (centre, left or right)

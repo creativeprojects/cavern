@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"io"
 	"io/ioutil"
 	"log"
 
-	"github.com/hajimehoshi/ebiten/audio"
-	"github.com/hajimehoshi/ebiten/audio/vorbis"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 	"github.com/markbates/pkger"
 )
 
@@ -18,7 +20,7 @@ type AudioPlayer struct {
 
 func NewAudioPlayer(audioContext *audio.Context) (*AudioPlayer, error) {
 	type audioStream interface {
-		audio.ReadSeekCloser
+		io.ReadSeeker
 		Length() int64
 	}
 
@@ -35,7 +37,7 @@ func NewAudioPlayer(audioContext *audio.Context) (*AudioPlayer, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err = vorbis.Decode(audioContext, audio.BytesReadSeekCloser(theme))
+	s, err = vorbis.Decode(audioContext, bytes.NewReader(theme))
 	if err != nil {
 		return nil, err
 	}
@@ -66,10 +68,7 @@ func PlaySE(audioContext *audio.Context, bs []byte) {
 		log.Printf("cannot play empty sound")
 		return
 	}
-	sePlayer, err := audio.NewPlayerFromBytes(audioContext, bs)
-	if err != nil {
-		log.Printf("error playing sound effect: %v", err)
-	}
+	sePlayer := audio.NewPlayerFromBytes(audioContext, bs)
 	// sePlayer is never GCed as long as it plays.
 	sePlayer.Play()
 }
