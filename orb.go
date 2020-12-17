@@ -96,9 +96,10 @@ func (o *Orb) Update(game *Game) {
 	if o.timer > OrbMaxTimer || o.Y(YBottom) <= -40 {
 		o.active = false
 		game.StartPop(PopOrb, o.X(XCentre), o.Y(YBottom))
+		// create an extra fruit if an enemy was trapped in it
 		if o.trappedEnemyType > RobotNone {
 			fruit := game.CreateFruit(true)
-			fruit.MoveTo(o.X(XCentre), o.Y(YBottom))
+			fruit.MoveTo(o.X(XCentre), math.Ceil(o.Y(YBottom)))
 			game.RandomSoundEffect(o.popSounds)
 		}
 		return

@@ -368,6 +368,10 @@ func (g *Game) displayDebug(screen *ebiten.Image) {
 		len(g.bolts),
 		g.player,
 	)
+	fruitTemplate := "Fruit %d: ttl: %d x: %0.2f, y: %0.2f \n"
+	for i, fruit := range g.fruits {
+		msg += fmt.Sprintf(fruitTemplate, i, fruit.TTL, fruit.x, fruit.y)
+	}
 	ebitenutil.DebugPrint(screen, msg)
 
 	ebitenutil.DrawLine(screen, 70, 75, 70, 400, color.White)
