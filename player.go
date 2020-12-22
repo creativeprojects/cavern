@@ -26,6 +26,7 @@ var (
 type Player struct {
 	sprite        *Sprite
 	gravity       *Gravity
+	imageBlank    *ebiten.Image
 	imageStill    *ebiten.Image
 	runLeft       []*ebiten.Image
 	runRight      []*ebiten.Image
@@ -33,9 +34,14 @@ type Player struct {
 	jumpRight     *ebiten.Image
 	blowLeft      *ebiten.Image
 	blowRight     *ebiten.Image
+	recoilLeft    *ebiten.Image
+	recoilRight   *ebiten.Image
+	imagesFall    [2]*ebiten.Image
 	iconImages    [3]*ebiten.Image
 	landingSounds [][]byte
 	blowSounds    [][]byte
+	ouchSounds    [][]byte
+	dieSound      []byte
 	lives         int
 	health        int
 	score         int
@@ -53,6 +59,7 @@ func NewPlayer(level *Level) *Player {
 	return &Player{
 		sprite:        sprite,
 		gravity:       gravity,
+		imageBlank:    images[imagePlayerBlank],
 		imageStill:    images[imagePlayerStill],
 		runLeft:       []*ebiten.Image{images["run00"], images["run01"], images["run02"], images["run03"]},
 		runRight:      []*ebiten.Image{images["run10"], images["run11"], images["run12"], images["run13"]},
@@ -60,46 +67,84 @@ func NewPlayer(level *Level) *Player {
 		jumpRight:     images[imageJumpRight],
 		blowLeft:      images[imageBlowLeft],
 		blowRight:     images[imageBlowRight],
+		recoilLeft:    images[imageRecoilLeft],
+		recoilRight:   images[imageRecoilRight],
+		imagesFall:    [2]*ebiten.Image{images["fall0"], images["fall1"]},
 		iconImages:    [3]*ebiten.Image{images["life"], images["plus"], images["health"]},
 		landingSounds: [][]byte{sounds["land0"], sounds["land1"], sounds["land2"], sounds["land3"]},
 		blowSounds:    [][]byte{sounds["blow0"] /*sounds["blow1"],*/, sounds["blow2"], sounds["blow3"]},
+		ouchSounds:    [][]byte{sounds["ouch0"], sounds["ouch1"], sounds["ouch2"], sounds["ouch3"]},
+		dieSound:      sounds["die0"],
 		lives:         PlayerStartLives,
 	}
 }
 
-// Strung returns a debug string
+// String returns a debug string
 func (p *Player) String() string {
-	return fmt.Sprintf("score %d - health %d - lives %d - blow timer %d",
+	return fmt.Sprintf("score %d - health %d - lives %d - blow timer %d = hurt timer %d",
 		p.score,
 		p.health,
 		p.lives,
 		p.blowTimer,
+		p.hurtTimer,
 	)
 }
 
 func (p *Player) Start(level *Level) *Player {
 	p.gravity = NewGravity(level, p.sprite)
-	p.health = PlayerStartHealth
-	p.hurtTimer = PlayerStartInvulnerability
-	p.sprite.MoveTo(WindowWidth/2, 100)
+	p.Reset()
 	p.sprite.Animate([]*ebiten.Image{p.imageStill}, nil, 8, true)
 	return p
 }
 
+func (p *Player) Reset() {
+	p.health = PlayerStartHealth
+	p.hurtTimer = PlayerStartInvulnerability
+	p.sprite.MoveTo(WindowWidth/2, 100)
+}
+
 // Hit tests if the coordinates collide with us and returns yes if it does
-func (p *Player) Hit(x, y float64) bool {
-	collided := p.sprite.CollidePoint(x, y)
+func (p *Player) Hit(x, y, directionX float64, game *Game) bool {
+	collided := p.sprite.CollidePoint(x, y) && p.hurtTimer < 0
+	if collided {
+		p.hurtTimer = PlayerStartInvulnerability
+		p.health--
+		p.gravity.speedY = -12
+		p.gravity.landed = false
+		p.direction = directionX
+		if p.health > 0 {
+			game.RandomSoundEffect(p.ouchSounds)
+		} else {
+			game.SoundEffect(p.dieSound)
+		}
+	}
 	return collided
 }
 
 func (p *Player) Update(game *Game) {
-	if p.fireTimer > 0 {
+	if p.fireTimer >= 0 {
 		p.fireTimer--
 	}
-	p.hurtTimer--
+	if p.hurtTimer >= 0 {
+		p.hurtTimer--
+	}
 	p.blowTimer++
-	if p.health == 0 {
+
+	if p.gravity.landed {
+		// hurt timer starts at 200, but drops to 100 once the player has landed
+		p.hurtTimer = min(p.hurtTimer, 100)
+	}
+
+	if p.hurtTimer > 100 && p.health > 0 {
+		// sideway motion if just being knocked by a bolt
+		p.sprite.Move(p.direction*4, 0)
+	}
+	if p.hurtTimer > 100 && p.health <= 0 {
 		p.gravity.UpdateFreeFall()
+		if p.gravity.Y(YCentre) >= WindowHeight*1.5 {
+			p.lives--
+			p.Reset()
+		}
 	} else {
 		landed := p.gravity.UpdateFall()
 		if landed {
@@ -107,10 +152,22 @@ func (p *Player) Update(game *Game) {
 		}
 	}
 	switch {
+	case p.hurtTimer > 0 && p.hurtTimer%2 == 0:
+		p.sprite.Animation([]*ebiten.Image{p.imageBlank}, nil, 8, true)
+
+	case p.hurtTimer > 100 && p.health > 0 && p.direction == -1:
+		p.sprite.Animation([]*ebiten.Image{p.recoilLeft}, nil, 8, true)
+	case p.hurtTimer > 100 && p.health > 0:
+		p.sprite.Animation([]*ebiten.Image{p.recoilRight}, nil, 8, true)
+
+	case p.hurtTimer > 100 && p.health <= 0:
+		p.sprite.Animation(p.imagesFall[:], nil, 4, true)
+
 	case p.blowingOrb != nil && p.direction == -1:
 		p.sprite.Animation([]*ebiten.Image{p.blowLeft}, nil, 8, true)
 	case p.blowingOrb != nil:
 		p.sprite.Animation([]*ebiten.Image{p.blowRight}, nil, 8, true)
+
 	case !p.gravity.landed && p.movingX < 0:
 		p.sprite.Animation([]*ebiten.Image{p.jumpLeft}, nil, 8, true)
 

@@ -50,7 +50,7 @@ func (b *Bolt) Update(game *Game) {
 		}
 	}
 	// collision with a player
-	if game.player.Hit(b.X(XCentre), b.Y(YCentre)) {
+	if game.player.Hit(b.X(XCentre), b.Y(YCentre), b.directionX, game) {
 		b.active = false
 		return
 	}

@@ -12,11 +12,14 @@ import (
 // Images
 const (
 	imageTitle       = "title"
+	imagePlayerBlank = "blank"
 	imagePlayerStill = "still"
 	imageJumpLeft    = "jump0"
 	imageJumpRight   = "jump1"
 	imageBlowLeft    = "blow0"
 	imageBlowRight   = "blow1"
+	imageRecoilLeft  = "recoil0"
+	imageRecoilRight = "recoil1"
 	imageLife        = "life"
 	imageHealth      = "health"
 	imagePlus        = "plus"
@@ -32,11 +35,14 @@ var (
 	sounds     map[string][]byte
 	imageNames = []string{
 		imageTitle,
+		imagePlayerBlank,
 		imagePlayerStill,
 		imageJumpLeft,
 		imageJumpRight,
 		imageBlowLeft,
 		imageBlowRight,
+		imageRecoilLeft,
+		imageRecoilRight,
 		imageLife,
 		imageHealth,
 		imagePlus,
@@ -93,6 +99,9 @@ func init() {
 			imageNames = append(imageNames, fmt.Sprintf("bolt%d%d", i, j))
 		}
 	}
+	for i := 0; i <= 1; i++ {
+		imageNames = append(imageNames, fmt.Sprintf("fall%d", i))
+	}
 	// font images
 	imageNames = append(imageNames, fmt.Sprintf("font032"))
 	for i := 48; i <= 57; i++ {
@@ -109,10 +118,13 @@ func init() {
 		soundNames = append(soundNames, fmt.Sprintf("trap%d", i))
 		soundNames = append(soundNames, fmt.Sprintf("laser%d", i))
 		soundNames = append(soundNames, fmt.Sprintf("pop%d", i))
+		soundNames = append(soundNames, fmt.Sprintf("ouch%d", i))
 	}
 	soundNames = append(soundNames, "blow0")
 	soundNames = append(soundNames, "blow2")
 	soundNames = append(soundNames, "blow3")
+
+	soundNames = append(soundNames, "die0")
 }
 
 func main() {
