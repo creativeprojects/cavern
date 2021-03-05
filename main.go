@@ -23,6 +23,7 @@ const (
 	imageLife        = "life"
 	imageHealth      = "health"
 	imagePlus        = "plus"
+	imageOver        = "over"
 
 	soundLevel = "level0"
 	soundJump  = "jump0"
@@ -46,6 +47,7 @@ var (
 		imageLife,
 		imageHealth,
 		imagePlus,
+		imageOver,
 	}
 	soundNames = []string{
 		soundLevel,

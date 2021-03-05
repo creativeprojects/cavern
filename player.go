@@ -81,12 +81,16 @@ func NewPlayer(level *Level) *Player {
 
 // String returns a debug string
 func (p *Player) String() string {
-	return fmt.Sprintf("score %d - health %d - lives %d - blow timer %d = hurt timer %d",
+	return fmt.Sprintf("score %d - health %d - lives %d - blow timer %d - hurt timer %d\nPlayer coordinates %s: %.3f %s: %.3f\n",
 		p.score,
 		p.health,
 		p.lives,
 		p.blowTimer,
 		p.hurtTimer,
+		p.sprite.xType.String(),
+		p.sprite.x,
+		p.sprite.yType.String(),
+		p.sprite.y,
 	)
 }
 
@@ -112,7 +116,7 @@ func (p *Player) Hit(x, y, directionX float64, game *Game) bool {
 		p.gravity.speedY = -12
 		p.gravity.landed = false
 		p.direction = directionX
-		if p.health > 0 {
+		if p.health >= 0 {
 			game.RandomSoundEffect(p.ouchSounds)
 		} else {
 			game.SoundEffect(p.dieSound)
@@ -137,13 +141,17 @@ func (p *Player) Update(game *Game) {
 
 	if p.hurtTimer > 100 && p.health > 0 {
 		// sideway motion if just being knocked by a bolt
-		p.sprite.Move(p.direction*4, 0)
+		p.sprite.Move(p.direction*4, 0) // FIXME! this code sends the player inside the walls
 	}
 	if p.hurtTimer > 100 && p.health <= 0 {
 		p.gravity.UpdateFreeFall()
 		if p.gravity.Y(YCentre) >= WindowHeight*1.5 {
 			p.lives--
-			p.Reset()
+			if p.lives >= 0 {
+				p.Reset()
+			} else {
+				game.state = StateGameOver
+			}
 		}
 	} else {
 		landed := p.gravity.UpdateFall()

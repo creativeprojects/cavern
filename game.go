@@ -142,6 +142,19 @@ func (g *Game) Update() error {
 		}
 		pendingEnemyCount := g.level.PendingEnemies()
 
+		if pendingEnemyCount+enemyCount == 0 {
+			// end of the level when all the fruits are gone
+			fruitCount := 0
+			for _, fruit := range g.fruits {
+				if !fruit.HasExpired() {
+					fruitCount++
+				}
+			}
+			if fruitCount == 0 {
+				g.NextLevel()
+				return nil
+			}
+		}
 		if pendingEnemyCount > 0 && enemyCount < g.level.MaxEnemies() && math.Mod(g.timer, NewEnemyRate) == 0 {
 			robotType := g.level.NextEnemy()
 			if robotType > RobotNone {
@@ -273,6 +286,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.player.Draw(screen)
 
 	case StateGameOver:
+		screen.DrawImage(images[imageOver], nil)
 	}
 
 	if g.debug {
@@ -356,7 +370,7 @@ func (g *Game) Fire(directionX, x, y float64) {
 }
 
 func (g *Game) displayDebug(screen *ebiten.Image) {
-	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d - Bolts %d \n Player %s \n"
+	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d - Bolts %d \n Player %s"
 	msg := fmt.Sprintf(template,
 		ebiten.CurrentTPS(),
 		g.level.id,
