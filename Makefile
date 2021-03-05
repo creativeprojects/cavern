@@ -33,6 +33,3 @@ coverage:
 clean:
 		$(GOCLEAN)
 		rm -f $(BINARY) $(COVERAGE_FILE)
-
-resources:
-		$(GORUN) github.com/markbates/pkger/cmd/pkger -include /images -include /music -include /sounds

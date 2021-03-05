@@ -8,7 +8,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
-	"github.com/markbates/pkger"
 )
 
 // AudioPlayer represents the current audio state.
@@ -28,7 +27,7 @@ func NewAudioPlayer(audioContext *audio.Context) (*AudioPlayer, error) {
 
 	var s audioStream
 	var err error
-	file, err := pkger.Open("/music/theme.ogg")
+	file, err := embededFiles.Open("music/theme.ogg")
 	if err != nil {
 		return nil, err
 	}

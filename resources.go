@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"embed"
 	"fmt"
 	"image"
 
@@ -9,13 +11,15 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
-	"github.com/markbates/pkger"
 )
+
+//go:embed images sounds music
+var embededFiles embed.FS
 
 func loadImages(imageNames []string) (map[string]*ebiten.Image, error) {
 	imagesMap := make(map[string]*ebiten.Image, len(imageNames))
 	for _, imageName := range imageNames {
-		file, err := pkger.Open("/images/" + imageName + ".png")
+		file, err := embededFiles.Open("images/" + imageName + ".png")
 		if err != nil {
 			return imagesMap, fmt.Errorf("%s: %w", imageName, err)
 		}
@@ -36,12 +40,14 @@ func loadImages(imageNames []string) (map[string]*ebiten.Image, error) {
 func loadSounds(context *audio.Context, soundNames []string) (map[string][]byte, error) {
 	soundsMap := make(map[string][]byte, len(soundNames))
 	for _, soundName := range soundNames {
-		file, err := pkger.Open("/sounds/" + soundName + ".ogg")
+		// annoyingly, fs.File does not implement io.ReadSeeker,
+		// so we need to load it first and create a reader from the buffer
+		buffer, err := embededFiles.ReadFile("sounds/" + soundName + ".ogg")
 		if err != nil {
 			return soundsMap, fmt.Errorf("%s: %w", soundName, err)
 		}
-		defer file.Close()
-		snd, err := vorbis.Decode(context, file)
+		reader := bytes.NewReader(buffer)
+		snd, err := vorbis.Decode(context, reader)
 		if err != nil {
 			return soundsMap, fmt.Errorf("%s: %w", soundName, err)
 		}
