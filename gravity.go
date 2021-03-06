@@ -1,6 +1,10 @@
 package main
 
-import "math"
+import (
+	"math"
+
+	"github.com/creativeprojects/cavern/lib"
+)
 
 type Gravity struct {
 	*Collide
@@ -8,7 +12,7 @@ type Gravity struct {
 	landed bool
 }
 
-func NewGravity(level *Level, sprite *Sprite) *Gravity {
+func NewGravity(level *Level, sprite *lib.Sprite) *Gravity {
 	return &Gravity{
 		Collide: NewCollide(level, sprite),
 		speedY:  0,
@@ -37,9 +41,9 @@ func (g *Gravity) UpdateFall() bool {
 		}
 		return false
 	}
-	if g.Y(YTop) >= WindowHeight {
+	if g.Y(lib.YTop) >= WindowHeight {
 		// fallen off the bottom, reappear at the top
-		g.MoveTo(g.x, g.y-WindowHeight)
+		g.MoveTo(g.RawX(), g.RawY()-WindowHeight)
 	}
 	return false
 }

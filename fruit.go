@@ -3,6 +3,7 @@ package main
 import (
 	"math/rand"
 
+	"github.com/creativeprojects/cavern/lib"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -36,7 +37,7 @@ var (
 
 // NewFruit creates a new random fruit. If extra is true there's a small chance to also create an extra life and extra health fruit.
 func NewFruit(level *Level, extra bool) *Fruit {
-	sprite := NewSprite(XCentre, YBottom)
+	sprite := lib.NewSprite(lib.XCentre, lib.YBottom)
 	f := &Fruit{
 		Gravity: NewGravity(level, sprite),
 		Animation: [totalFruits][]*ebiten.Image{
@@ -96,14 +97,17 @@ func (f *Fruit) Update(game *Game) {
 	f.TTL--
 	if f.TTL == 0 {
 		// create pop animation
-		game.StartPop(PopFruit, f.X(XCentre), f.Y(YBottom))
+		game.StartPop(PopFruit, f.X(lib.XCentre), f.Y(lib.YBottom))
 		return
 	}
-	if game.player.sprite.CollidePoint(f.X(XCentre), f.Y(YCentre)) {
+	if game.player.sprite.CollidePoint(f.X(lib.XCentre), f.Y(lib.YCentre)) {
 		f.TTL = 0
-		if f.Type >= ExtraHealth {
+		switch f.Type {
+		case ExtraHealth:
 			game.SoundEffect(sounds[soundBonus])
-		} else {
+		case ExtraLife:
+			game.SoundEffect(sounds[soundLife])
+		default:
 			game.SoundEffect(sounds[soundScore])
 		}
 		game.player.Eat(f.Type)

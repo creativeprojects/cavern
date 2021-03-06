@@ -1,15 +1,19 @@
 package main
 
-import "math"
+import (
+	"math"
+
+	"github.com/creativeprojects/cavern/lib"
+)
 
 // Collide manages collision between a sprite and a grid
 type Collide struct {
-	*Sprite
+	*lib.Sprite
 	level *Level
 }
 
 // NewCollide creates a new collision detection between a sprite and a grid
-func NewCollide(level *Level, sprite *Sprite) *Collide {
+func NewCollide(level *Level, sprite *lib.Sprite) *Collide {
 	return &Collide{
 		Sprite: sprite,
 		level:  level,
@@ -18,7 +22,7 @@ func NewCollide(level *Level, sprite *Sprite) *Collide {
 
 // CollideMove sets the new position, and returns true if the move was successful (returns false if there was a wall)
 func (c *Collide) CollideMove(dx, dy, speed float64) bool {
-	newX, newY := c.X(XCentre), c.Y(YBottom)
+	newX, newY := c.X(lib.XCentre), c.Y(lib.YBottom)
 
 	// movement is done 1 pixel at a time
 	for i := 0; i < int(speed); i++ {
@@ -36,7 +40,7 @@ func (c *Collide) CollideMove(dx, dy, speed float64) bool {
 			return false
 		}
 		// register the move
-		c.MoveToType(newX, newY, XCentre, YBottom)
+		c.MoveToType(newX, newY, lib.XCentre, lib.YBottom)
 	}
 	return true
 }

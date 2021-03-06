@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/creativeprojects/cavern/lib"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -26,7 +27,7 @@ type Game struct {
 	slow         bool
 	debug        bool
 	timer        float64
-	space        *Sprite
+	space        *lib.Sprite
 	level        *Level
 	player       *Player
 	fruits       []*Fruit
@@ -49,7 +50,7 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 		musicPlayer:  m,
 		state:        StateMenu,
 		slow:         false,
-		space: NewSprite(XCentre, YCentre).MoveTo(400, 280+45).Animate([]*ebiten.Image{
+		space: lib.NewSprite(lib.XCentre, lib.YCentre).MoveTo(400, 280+45).Animate([]*ebiten.Image{
 			images["space0"], images["space1"], images["space2"], images["space3"], images["space4"],
 			images["space5"], images["space6"], images["space7"], images["space8"], images["space9"],
 		}, nil, 4, true).SetSequenceFunc(func(counter int) int {
@@ -133,6 +134,10 @@ func (g *Game) Update() error {
 			}
 		}
 
+		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+			g.state = StatePaused
+		}
+
 		// count the enemies in game
 		enemyCount := 0
 		for _, robot := range g.robots {
@@ -150,7 +155,14 @@ func (g *Game) Update() error {
 					fruitCount++
 				}
 			}
-			if fruitCount == 0 {
+			// also check the trapped enemies
+			trapped := 0
+			for _, orb := range g.orbs {
+				if orb.IsActive() && orb.EnemyTrapped() {
+					trapped++
+				}
+			}
+			if fruitCount == 0 && trapped == 0 {
 				g.NextLevel()
 				return nil
 			}
@@ -192,30 +204,32 @@ func (g *Game) Update() error {
 
 		dx := 0.0
 		// player actions
-		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-			dx = -1
-		}
-		if ebiten.IsKeyPressed(ebiten.KeyRight) {
-			dx = 1
-		}
-		if dx != 0 {
-			g.player.Move(dx, 0, PlayerDefaultSpeed)
-		} else {
-			g.player.Still()
-		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-			if g.player.Jump() {
-				g.SoundEffect(sounds[soundJump])
+		if g.player.CanMove() {
+			if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+				dx = -1
 			}
-		}
-		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			g.player.StartBlowing(g)
-		}
-		if inpututil.KeyPressDuration(ebiten.KeySpace) > 1 && inpututil.KeyPressDuration(ebiten.KeySpace) <= MaxBlowingTime {
-			g.player.Blowing(g)
-		}
-		if inpututil.IsKeyJustReleased(ebiten.KeySpace) || inpututil.KeyPressDuration(ebiten.KeySpace) > MaxBlowingTime {
-			g.player.StopBlowing(g)
+			if ebiten.IsKeyPressed(ebiten.KeyRight) {
+				dx = 1
+			}
+			if dx != 0 {
+				g.player.Move(dx, 0, PlayerDefaultSpeed)
+			} else {
+				g.player.Still()
+			}
+			if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+				if g.player.Jump() {
+					g.SoundEffect(sounds[soundJump])
+				}
+			}
+			if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+				g.player.StartBlowing(g)
+			}
+			if inpututil.KeyPressDuration(ebiten.KeySpace) > 1 && inpututil.KeyPressDuration(ebiten.KeySpace) <= MaxBlowingTime {
+				g.player.Blowing(g)
+			}
+			if inpututil.IsKeyJustReleased(ebiten.KeySpace) || inpututil.KeyPressDuration(ebiten.KeySpace) > MaxBlowingTime {
+				g.player.StopBlowing(g)
+			}
 		}
 		g.player.Update(g)
 
@@ -254,7 +268,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(images[imageTitle], nil)
 		g.space.Draw(screen)
 
-	case StatePlaying:
+	case StatePlaying, StatePaused:
 		g.level.Draw(screen)
 
 		for _, fruit := range g.fruits {
@@ -370,7 +384,7 @@ func (g *Game) Fire(directionX, x, y float64) {
 }
 
 func (g *Game) displayDebug(screen *ebiten.Image) {
-	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d - Bolts %d \n Player %s"
+	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d - Bolts %d \n%s"
 	msg := fmt.Sprintf(template,
 		ebiten.CurrentTPS(),
 		g.level.id,
@@ -382,9 +396,9 @@ func (g *Game) displayDebug(screen *ebiten.Image) {
 		len(g.bolts),
 		g.player,
 	)
-	fruitTemplate := "Fruit %d: ttl: %d x: %0.2f, y: %0.2f \n"
+	fruitTemplate := " Fruit %d: ttl: %d coordinates: %s\n"
 	for i, fruit := range g.fruits {
-		msg += fmt.Sprintf(fruitTemplate, i, fruit.TTL, fruit.x, fruit.y)
+		msg += fmt.Sprintf(fruitTemplate, i, fruit.TTL, fruit.Sprite.String())
 	}
 	ebitenutil.DebugPrint(screen, msg)
 

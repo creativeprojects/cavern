@@ -5,6 +5,9 @@ import (
 	"embed"
 	"fmt"
 	"image"
+	"io/fs"
+	"path"
+	"strings"
 
 	_ "image/png"
 
@@ -16,10 +19,14 @@ import (
 //go:embed images sounds music
 var embededFiles embed.FS
 
-func loadImages(imageNames []string) (map[string]*ebiten.Image, error) {
+func loadImages() (map[string]*ebiten.Image, error) {
+	imageNames, err := fs.Glob(embededFiles, "images/*.png")
+	if err != nil {
+		return nil, err
+	}
 	imagesMap := make(map[string]*ebiten.Image, len(imageNames))
 	for _, imageName := range imageNames {
-		file, err := embededFiles.Open("images/" + imageName + ".png")
+		file, err := embededFiles.Open(imageName)
 		if err != nil {
 			return imagesMap, fmt.Errorf("%s: %w", imageName, err)
 		}
@@ -32,17 +39,23 @@ func loadImages(imageNames []string) (map[string]*ebiten.Image, error) {
 		if err != nil {
 			return imagesMap, fmt.Errorf("%s: %w", imageName, err)
 		}
+		imageName = path.Base(imageName)
+		imageName = strings.TrimSuffix(imageName, path.Ext(imageName))
 		imagesMap[imageName] = img2
 	}
 	return imagesMap, nil
 }
 
-func loadSounds(context *audio.Context, soundNames []string) (map[string][]byte, error) {
+func loadSounds(context *audio.Context) (map[string][]byte, error) {
+	soundNames, err := fs.Glob(embededFiles, "sounds/*.ogg")
+	if err != nil {
+		return nil, err
+	}
 	soundsMap := make(map[string][]byte, len(soundNames))
 	for _, soundName := range soundNames {
 		// annoyingly, fs.File does not implement io.ReadSeeker,
 		// so we need to load it first and create a reader from the buffer
-		buffer, err := embededFiles.ReadFile("sounds/" + soundName + ".ogg")
+		buffer, err := embededFiles.ReadFile(soundName)
 		if err != nil {
 			return soundsMap, fmt.Errorf("%s: %w", soundName, err)
 		}
@@ -56,6 +69,8 @@ func loadSounds(context *audio.Context, soundNames []string) (map[string][]byte,
 		if err != nil {
 			return soundsMap, fmt.Errorf("%s: %w", soundName, err)
 		}
+		soundName = path.Base(soundName)
+		soundName = strings.TrimSuffix(soundName, path.Ext(soundName))
 		soundsMap[soundName] = buf
 	}
 	return soundsMap, nil

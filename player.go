@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/creativeprojects/cavern/lib"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -24,7 +25,7 @@ var (
 )
 
 type Player struct {
-	sprite        *Sprite
+	sprite        *lib.Sprite
 	gravity       *Gravity
 	imageBlank    *ebiten.Image
 	imageStill    *ebiten.Image
@@ -54,7 +55,7 @@ type Player struct {
 }
 
 func NewPlayer(level *Level) *Player {
-	sprite := NewSprite(XCentre, YBottom)
+	sprite := lib.NewSprite(lib.XCentre, lib.YBottom)
 	gravity := NewGravity(level, sprite)
 	return &Player{
 		sprite:        sprite,
@@ -81,16 +82,13 @@ func NewPlayer(level *Level) *Player {
 
 // String returns a debug string
 func (p *Player) String() string {
-	return fmt.Sprintf("score %d - health %d - lives %d - blow timer %d - hurt timer %d\nPlayer coordinates %s: %.3f %s: %.3f\n",
+	return fmt.Sprintf(" Player score %d - health %d - lives %d - blow timer %d - hurt timer %d\n Player coordinates: %s\n",
 		p.score,
 		p.health,
 		p.lives,
 		p.blowTimer,
 		p.hurtTimer,
-		p.sprite.xType.String(),
-		p.sprite.x,
-		p.sprite.yType.String(),
-		p.sprite.y,
+		p.sprite.String(),
 	)
 }
 
@@ -141,11 +139,12 @@ func (p *Player) Update(game *Game) {
 
 	if p.hurtTimer > 100 && p.health > 0 {
 		// sideway motion if just being knocked by a bolt
-		p.sprite.Move(p.direction*4, 0) // FIXME! this code sends the player inside the walls
+		p.gravity.CollideMove(p.direction, 0, PlayerDefaultSpeed*2)
 	}
 	if p.hurtTimer > 100 && p.health <= 0 {
+		p.Still()
 		p.gravity.UpdateFreeFall()
-		if p.gravity.Y(YCentre) >= WindowHeight*1.5 {
+		if p.gravity.Y(lib.YCentre) >= WindowHeight*1.5 {
 			p.lives--
 			if p.lives >= 0 {
 				p.Reset()
@@ -230,13 +229,18 @@ func (p *Player) DrawHealth(screen *ebiten.Image) {
 	}
 }
 
-func (p *Player) Move(x, y, speed float64) {
-	p.gravity.CollideMove(x, y, speed)
-	p.movingX = x
-	p.direction = x
+func (p *Player) CanMove() bool {
+	return p.hurtTimer <= 100
 }
 
-// Still tells the player to stop moving
+// Move to direction dx, dy at speed
+func (p *Player) Move(dx, dy, speed float64) {
+	p.gravity.CollideMove(dx, dy, speed)
+	p.movingX = dx
+	p.direction = dx
+}
+
+// Still tells the player to stop moving left or right
 func (p *Player) Still() {
 	p.movingX = 0
 }
@@ -276,8 +280,8 @@ func (p *Player) StartBlowing(game *Game) {
 		direction = 1
 	}
 	// x position will be 38 pixels in front of the player position, while ensuring it is within the bounds of the level
-	x := math.Min(730, math.Max(70, p.sprite.X(XCentre)+direction*38))
-	y := p.sprite.Y(YCentre) // -35
+	x := math.Min(730, math.Max(70, p.sprite.X(lib.XCentre)+direction*38))
+	y := p.sprite.Y(lib.YCentre) // -35
 	p.blowingOrb.Start(x, y, direction)
 	game.RandomSoundEffect(p.blowSounds)
 }

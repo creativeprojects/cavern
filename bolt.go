@@ -1,6 +1,9 @@
 package main
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/creativeprojects/cavern/lib"
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 type Bolt struct {
 	*Collide
@@ -11,7 +14,7 @@ type Bolt struct {
 }
 
 func NewBolt(level *Level) *Bolt {
-	sprite := NewSprite(XCentre, YCentre)
+	sprite := lib.NewSprite(lib.XCentre, lib.YCentre)
 	return &Bolt{
 		Collide:     NewCollide(level, sprite),
 		leftImages:  []*ebiten.Image{images["bolt00"], images["bolt01"]},
@@ -44,13 +47,13 @@ func (b *Bolt) Update(game *Game) {
 	}
 	// collision with an orb
 	for _, orb := range game.orbs {
-		if orb.Hit(b.X(XCentre), b.Y(YCentre)) {
+		if orb.Hit(b.X(lib.XCentre), b.Y(lib.YCentre)) {
 			b.active = false
 			return
 		}
 	}
 	// collision with a player
-	if game.player.Hit(b.X(XCentre), b.Y(YCentre), b.directionX, game) {
+	if game.player.Hit(b.X(lib.XCentre), b.Y(lib.YCentre), b.directionX, game) {
 		b.active = false
 		return
 	}

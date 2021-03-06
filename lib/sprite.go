@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"fmt"
@@ -84,7 +84,7 @@ func NewSprite(xType XType, yType YType) *Sprite {
 
 // String returns a debug string representation of the sprite current state
 func (s *Sprite) String() string {
-	return fmt.Sprintf("x: %.0f, y: %.0f, frame: %d",
+	return fmt.Sprintf("x: %.1f, y: %.1f, frame: %d",
 		s.x,
 		s.y,
 		s.frame,
@@ -227,6 +227,14 @@ func (s *Sprite) MoveToType(x, y float64, xType XType, yType YType) *Sprite {
 		panic(fmt.Sprintf("mixing different types of coordinates is not yet supported: want to set %s but is %s", yType.String(), s.yType.String()))
 	}
 	return s
+}
+
+func (s *Sprite) RawX() float64 {
+	return s.x
+}
+
+func (s *Sprite) RawY() float64 {
+	return s.y
 }
 
 // X returns x position. If not image is available to calculate width, it returns -1

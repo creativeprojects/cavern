@@ -4,6 +4,7 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/creativeprojects/cavern/lib"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -32,7 +33,7 @@ type Robot struct {
 }
 
 func NewRobot(level *Level) *Robot {
-	sprite := NewSprite(XCentre, YBottom)
+	sprite := lib.NewSprite(lib.XCentre, lib.YBottom)
 	return &Robot{
 		Gravity: NewGravity(level, sprite),
 		imagesLeft: [2][]*ebiten.Image{
@@ -100,10 +101,10 @@ func (r *Robot) Update(game *Game) {
 		for _, orb := range game.orbs {
 			// the orb must be at our height, and within 200 pixels on the x axis
 			if orb.IsActive() &&
-				orb.Y(YCentre) >= r.Y(YTop) &&
-				orb.Y(YCentre) < r.Y(YBottom) &&
-				math.Abs(orb.X(XCentre)-r.X(XCentre)) < 200 {
-				if orb.X(XCentre)-r.X(XCentre) < 0 {
+				orb.Y(lib.YCentre) >= r.Y(lib.YTop) &&
+				orb.Y(lib.YCentre) < r.Y(lib.YBottom) &&
+				math.Abs(orb.X(lib.XCentre)-r.X(lib.XCentre)) < 200 {
+				if orb.X(lib.XCentre)-r.X(lib.XCentre) < 0 {
 					r.directionX = -1
 				} else {
 					r.directionX = 1
@@ -117,7 +118,7 @@ func (r *Robot) Update(game *Game) {
 	if r.fireTimer >= 12 {
 		// random chance of firing each frame. Likehood increases 10 times if player is at the same height as us
 		probability := game.level.FireProbability()
-		if r.Y(YTop) < game.player.sprite.Y(YBottom) && r.Y(YBottom) > game.player.sprite.Y(YTop) {
+		if r.Y(lib.YTop) < game.player.sprite.Y(lib.YBottom) && r.Y(lib.YBottom) > game.player.sprite.Y(lib.YTop) {
 			probability *= 10
 		}
 		if rand.Float64() < probability {
@@ -132,11 +133,11 @@ func (r *Robot) Update(game *Game) {
 		}
 	} else if r.fireTimer == 8 {
 		// once the fire timer has been set to 0, it will count up - frame 8 of the animation is when the actual bolt is fired
-		game.Fire(r.directionX, r.X(XCentre)+r.directionX*20, r.Y(YCentre))
+		game.Fire(r.directionX, r.X(lib.XCentre)+r.directionX*20, r.Y(lib.YCentre))
 	}
 	// am I colliding with an Orb? if so, become trapped in it
 	for _, orb := range game.orbs {
-		if orb.IsActive() && !orb.EnemyTrapped() && r.CollidePoint(orb.X(XCentre), orb.Y(YCentre)) {
+		if orb.IsActive() && !orb.EnemyTrapped() && r.CollidePoint(orb.X(lib.XCentre), orb.Y(lib.YCentre)) {
 			r.alive = false
 			orb.TrapEnemy(r.robotType)
 			game.RandomSoundEffect(r.trapSounds)

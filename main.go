@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "image/png"
 	"log"
 
@@ -29,6 +28,8 @@ const (
 	soundJump  = "jump0"
 	soundScore = "score0"
 	soundBonus = "bonus0"
+	soundLife  = "life0"
+	soundOver  = "over0"
 )
 
 var (
@@ -54,94 +55,24 @@ var (
 		soundJump,
 		soundScore,
 		soundBonus,
+		soundLife,
+		soundOver,
 	}
 )
-
-func init() {
-	// it's easier to build up image names this way
-	for i := 0; i <= 9; i++ {
-		imageNames = append(imageNames, fmt.Sprintf("space%d", i))
-	}
-	for i := 0; i <= 3; i++ {
-		imageNames = append(imageNames, fmt.Sprintf("bg%d", i))
-		imageNames = append(imageNames, fmt.Sprintf("block%d", i))
-	}
-	for i := 0; i <= 4; i++ {
-		for j := 0; j <= 2; j++ {
-			imageNames = append(imageNames, fmt.Sprintf("fruit%d%d", i, j))
-		}
-	}
-	for i := 0; i <= 1; i++ {
-		for j := 0; j <= 6; j++ {
-			imageNames = append(imageNames, fmt.Sprintf("pop%d%d", i, j))
-		}
-	}
-	for i := 0; i <= 6; i++ {
-		imageNames = append(imageNames, fmt.Sprintf("orb%d", i))
-	}
-	for i := 0; i <= 1; i++ {
-		for j := 0; j <= 3; j++ {
-			imageNames = append(imageNames, fmt.Sprintf("run%d%d", i, j))
-		}
-	}
-	for i := 0; i <= 1; i++ {
-		for j := 0; j <= 1; j++ {
-			for k := 0; k <= 7; k++ {
-				imageNames = append(imageNames, fmt.Sprintf("robot%d%d%d", i, j, k))
-			}
-		}
-	}
-	for i := 0; i <= 1; i++ {
-		for j := 0; j <= 7; j++ {
-			imageNames = append(imageNames, fmt.Sprintf("trap%d%d", i, j))
-		}
-	}
-	for i := 0; i <= 1; i++ {
-		for j := 0; j <= 1; j++ {
-			imageNames = append(imageNames, fmt.Sprintf("bolt%d%d", i, j))
-		}
-	}
-	for i := 0; i <= 1; i++ {
-		imageNames = append(imageNames, fmt.Sprintf("fall%d", i))
-	}
-	// font images
-	imageNames = append(imageNames, fmt.Sprintf("font032"))
-	for i := 48; i <= 57; i++ {
-		imageNames = append(imageNames, fmt.Sprintf("font0%d", i))
-	}
-	for i := 65; i <= 90; i++ {
-		imageNames = append(imageNames, fmt.Sprintf("font0%d", i))
-	}
-
-	// sounds
-	for i := 0; i <= 3; i++ {
-		soundNames = append(soundNames, fmt.Sprintf("land%d", i))
-		// soundNames = append(soundNames, fmt.Sprintf("blow%d", i))
-		soundNames = append(soundNames, fmt.Sprintf("trap%d", i))
-		soundNames = append(soundNames, fmt.Sprintf("laser%d", i))
-		soundNames = append(soundNames, fmt.Sprintf("pop%d", i))
-		soundNames = append(soundNames, fmt.Sprintf("ouch%d", i))
-	}
-	soundNames = append(soundNames, "blow0")
-	soundNames = append(soundNames, "blow2")
-	soundNames = append(soundNames, "blow3")
-
-	soundNames = append(soundNames, "die0")
-}
 
 func main() {
 	var err error
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	images, err = loadImages(imageNames)
+	images, err = loadImages()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	audioContext := audio.NewContext(SampleRate)
 
-	sounds, err = loadSounds(audioContext, soundNames)
+	sounds, err = loadSounds(audioContext)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/creativeprojects/cavern/lib"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -15,7 +16,7 @@ const (
 type Pop struct {
 	images [2][]*ebiten.Image
 	Type   PopType
-	sprite *Sprite
+	sprite *lib.Sprite
 }
 
 // NewPop creates a new blank pop animation.
@@ -25,7 +26,7 @@ func NewPop() *Pop {
 			{images["pop00"], images["pop01"], images["pop02"], images["pop03"], images["pop04"], images["pop05"], images["pop06"]},
 			{images["pop10"], images["pop11"], images["pop12"], images["pop13"], images["pop14"], images["pop15"], images["pop16"]},
 		},
-		sprite: NewSprite(XCentre, YBottom),
+		sprite: lib.NewSprite(lib.XCentre, lib.YBottom),
 	}
 	return i
 }

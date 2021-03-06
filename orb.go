@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 
+	"github.com/creativeprojects/cavern/lib"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -21,7 +22,7 @@ type Orb struct {
 
 func NewOrb(level *Level) *Orb {
 	return &Orb{
-		Collide: NewCollide(level, NewSprite(XCentre, YBottom)),
+		Collide: NewCollide(level, lib.NewSprite(lib.XCentre, lib.YBottom)),
 		blowImages: []*ebiten.Image{images["orb0"], images["orb1"], images["orb2"],
 			images["orb3"], images["orb4"], images["orb5"], images["orb6"]},
 		trapImages: [2][]*ebiten.Image{
@@ -93,13 +94,13 @@ func (o *Orb) Update(game *Game) {
 	if o.timer == o.blownFrames {
 		o.floating = true
 	}
-	if o.timer > OrbMaxTimer || o.Y(YBottom) <= -40 {
+	if o.timer > OrbMaxTimer || o.Y(lib.YBottom) <= -40 {
 		o.active = false
-		game.StartPop(PopOrb, o.X(XCentre), o.Y(YBottom))
+		game.StartPop(PopOrb, o.X(lib.XCentre), o.Y(lib.YBottom))
 		// create an extra fruit if an enemy was trapped in it
 		if o.trappedEnemyType > RobotNone {
 			fruit := game.CreateFruit(true)
-			fruit.MoveTo(o.X(XCentre), math.Ceil(o.Y(YBottom)))
+			fruit.MoveTo(o.X(lib.XCentre), math.Ceil(o.Y(lib.YBottom)))
 			game.RandomSoundEffect(o.popSounds)
 		}
 		return
