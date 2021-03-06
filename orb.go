@@ -78,7 +78,7 @@ func (o *Orb) Hit(x, y float64) bool {
 }
 
 func (o *Orb) Update(game *Game) {
-	if !o.active {
+	if !o.IsActive() {
 		return
 	}
 	o.timer++
@@ -109,6 +109,9 @@ func (o *Orb) Update(game *Game) {
 }
 
 func (o *Orb) Draw(screen *ebiten.Image) {
+	if !o.IsActive() {
+		return
+	}
 	o.Sprite.Draw(screen)
 }
 

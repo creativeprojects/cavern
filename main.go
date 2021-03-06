@@ -33,31 +33,8 @@ const (
 )
 
 var (
-	images     map[string]*ebiten.Image
-	sounds     map[string][]byte
-	imageNames = []string{
-		imageTitle,
-		imagePlayerBlank,
-		imagePlayerStill,
-		imageJumpLeft,
-		imageJumpRight,
-		imageBlowLeft,
-		imageBlowRight,
-		imageRecoilLeft,
-		imageRecoilRight,
-		imageLife,
-		imageHealth,
-		imagePlus,
-		imageOver,
-	}
-	soundNames = []string{
-		soundLevel,
-		soundJump,
-		soundScore,
-		soundBonus,
-		soundLife,
-		soundOver,
-	}
+	images map[string]*ebiten.Image
+	sounds map[string][]byte
 )
 
 func main() {

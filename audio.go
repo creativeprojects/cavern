@@ -23,8 +23,6 @@ func NewAudioPlayer(audioContext *audio.Context) (*AudioPlayer, error) {
 		Length() int64
 	}
 
-	const bytesPerSample = 4 // TODO: This should be defined in audio package
-
 	var s audioStream
 	var err error
 	file, err := embededFiles.Open("music/theme.ogg")

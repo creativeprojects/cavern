@@ -59,6 +59,9 @@ func (l *Level) ID() int {
 
 // Draw level
 func (l *Level) Draw(screen *ebiten.Image) {
+	if l.colour < 0 || l.colour > 3 {
+		return
+	}
 	screen.DrawImage(l.backgroundImages[l.colour], nil)
 
 	for y, line := range l.grid {

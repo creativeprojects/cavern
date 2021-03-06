@@ -43,6 +43,7 @@ type Player struct {
 	blowSounds    [][]byte
 	ouchSounds    [][]byte
 	dieSound      []byte
+	demo          bool
 	lives         int
 	health        int
 	score         int
@@ -77,6 +78,7 @@ func NewPlayer(level *Level) *Player {
 		ouchSounds:    [][]byte{sounds["ouch0"], sounds["ouch1"], sounds["ouch2"], sounds["ouch3"]},
 		dieSound:      sounds["die0"],
 		lives:         PlayerStartLives,
+		demo:          true,
 	}
 }
 
@@ -93,6 +95,7 @@ func (p *Player) String() string {
 }
 
 func (p *Player) Start(level *Level) *Player {
+	p.demo = false
 	p.gravity = NewGravity(level, p.sprite)
 	p.Reset()
 	p.sprite.Animate([]*ebiten.Image{p.imageStill}, nil, 8, true)
@@ -196,7 +199,9 @@ func (p *Player) Update(game *Game) {
 
 // Draw the player on the screen
 func (p *Player) Draw(screen *ebiten.Image) {
-	p.sprite.Draw(screen)
+	if !p.demo {
+		p.sprite.Draw(screen)
+	}
 
 	// Draw player score
 	scoreBytes := []byte(fmt.Sprintf("%d", p.score))
@@ -258,6 +263,7 @@ func (p *Player) Jump() bool {
 func (p *Player) Eat(fruitType FruitType) {
 	switch {
 	case fruitType == ExtraHealth:
+		// cannot have more than "full" health
 		p.health = min(PlayerStartHealth, p.health+1)
 	case fruitType == ExtraLife:
 		p.lives++

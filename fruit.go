@@ -53,6 +53,7 @@ func NewFruit(level *Level, extra bool) *Fruit {
 	return f
 }
 
+// Generate a new fruit. If extra is set to yes, a health or life can be generated.
 func (f *Fruit) Generate(extra bool) *Fruit {
 	var fruitType FruitType
 	if !extra {
@@ -119,7 +120,7 @@ func (f *Fruit) Update(game *Game) {
 	return
 }
 
-func (f *Fruit) Draw(screen *ebiten.Image, timer float64) {
+func (f *Fruit) Draw(screen *ebiten.Image) {
 	if f.HasExpired() {
 		return
 	}

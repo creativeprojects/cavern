@@ -44,7 +44,7 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	level := NewLevel()
+
 	g := &Game{
 		audioContext: audioContext,
 		musicPlayer:  m,
@@ -62,16 +62,28 @@ func NewGame(audioContext *audio.Context) (*Game, error) {
 			// which stage the animation is at when the game first starts
 			return int(math.Min((math.Floor(math.Mod(float64(counter)+40, 160)) / 4), 9))
 		}),
-		level:  level,
-		player: NewPlayer(level),
-		fruits: make([]*Fruit, 0, 10),
-		pops:   make([]*Pop, 0, 10),
-		orbs:   make([]*Orb, MaxOrbs),
-		robots: make([]*Robot, 0, 10),
-		bolts:  make([]*Bolt, 0, 10),
 	}
 
-	return g, nil
+	return g.Initialize(), nil
+}
+
+// Initialize a new game
+func (g *Game) Initialize() *Game {
+	g.timer = -1
+	g.level = NewLevel()
+	g.level.Next()
+	g.player = NewPlayer(g.level)
+	g.fruits = make([]*Fruit, 0, 10)
+	g.pops = make([]*Pop, 0, 10)
+	g.orbs = make([]*Orb, MaxOrbs)
+	g.robots = make([]*Robot, 0, 10)
+	g.bolts = make([]*Bolt, 0, 10)
+
+	// create Orbs
+	for i := 0; i < MaxOrbs; i++ {
+		g.orbs[i] = NewOrb(g.level)
+	}
+	return g
 }
 
 // Layout defines the size of the game in pixels
@@ -79,18 +91,11 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 	return WindowWidth, WindowHeight
 }
 
-// Start initializes a new game
+// Start a new game
 func (g *Game) Start() *Game {
-	g.timer = -1
-	g.level = NewLevel()
-	g.level.Next()
+	g.Initialize()
 
 	g.player.Start(g.level)
-
-	// create Orbs
-	for i := 0; i < MaxOrbs; i++ {
-		g.orbs[i] = NewOrb(g.level)
-	}
 
 	g.state = StatePlaying
 	return g
@@ -112,10 +117,31 @@ func (g *Game) Update() error {
 	}
 
 	if g.state == StateMenu {
+		g.space.Update()
+
+		for _, pop := range g.pops {
+			pop.Update()
+		}
+
+		for _, fruit := range g.fruits {
+			fruit.Update(g)
+		}
+
+		for _, bolt := range g.bolts {
+			bolt.Update(g)
+		}
+
+		for _, orb := range g.orbs {
+			orb.Update(g)
+		}
+
+		for _, robot := range g.robots {
+			robot.Update(g)
+		}
+
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			g.Start()
 		}
-		g.space.Update()
 		return nil
 	}
 	if g.state == StatePlaying {
@@ -132,6 +158,11 @@ func (g *Game) Update() error {
 			} else {
 				ebiten.SetMaxTPS(GameNormalSpeed)
 			}
+		}
+
+		// instant game over
+		if inpututil.IsKeyJustPressed(ebiten.KeyO) {
+			g.state = StateGameOver
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
@@ -191,15 +222,11 @@ func (g *Game) Update() error {
 		}
 
 		for _, orb := range g.orbs {
-			if orb.IsActive() {
-				orb.Update(g)
-			}
+			orb.Update(g)
 		}
 
 		for _, robot := range g.robots {
-			if robot.IsAlive() {
-				robot.Update(g)
-			}
+			robot.Update(g)
 		}
 
 		dx := 0.0
@@ -247,7 +274,7 @@ func (g *Game) Update() error {
 	if g.state == StateGameOver {
 		// un-pause
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-			g.Reset()
+			g.Initialize()
 			g.state = StateMenu
 		}
 		return nil
@@ -255,56 +282,46 @@ func (g *Game) Update() error {
 	return nil
 }
 
-// Reset game ready for a new one
-func (g *Game) Reset() {
-	g.timer = -1
-}
-
 // Draw game events
 func (g *Game) Draw(screen *ebiten.Image) {
 
-	switch g.state {
-	case StateMenu:
-		screen.DrawImage(images[imageTitle], nil)
-		g.space.Draw(screen)
+	g.level.Draw(screen)
 
-	case StatePlaying, StatePaused:
-		g.level.Draw(screen)
-
-		for _, fruit := range g.fruits {
-			if !fruit.HasExpired() {
-				fruit.Draw(screen, g.timer)
-			}
-		}
-
-		for _, bolt := range g.bolts {
-			bolt.Draw(screen)
-		}
-
-		for _, pop := range g.pops {
-			pop.Draw(screen)
-		}
-
-		for _, robot := range g.robots {
-			if robot.IsAlive() {
-				robot.Draw(screen)
-			}
-		}
-
-		for _, orb := range g.orbs {
-			if orb.IsActive() {
-				orb.Draw(screen)
-			}
-		}
-
-		g.player.Draw(screen)
-
-	case StateGameOver:
-		screen.DrawImage(images[imageOver], nil)
+	for _, fruit := range g.fruits {
+		fruit.Draw(screen)
 	}
+
+	for _, bolt := range g.bolts {
+		bolt.Draw(screen)
+	}
+
+	for _, pop := range g.pops {
+		pop.Draw(screen)
+	}
+
+	for _, robot := range g.robots {
+		robot.Draw(screen)
+	}
+
+	for _, orb := range g.orbs {
+		orb.Draw(screen)
+	}
+
+	g.player.Draw(screen)
 
 	if g.debug {
 		g.displayDebug(screen)
+	}
+
+	if g.state == StateMenu {
+		screen.DrawImage(images[imageTitle], nil)
+		g.space.Draw(screen)
+		return
+	}
+
+	if g.state == StateGameOver {
+		screen.DrawImage(images[imageOver], nil)
+		return
 	}
 }
 
@@ -326,8 +343,7 @@ func (g *Game) CreateFruit(extra bool) *Fruit {
 	// find a free fruit
 	for _, fruit := range g.fruits {
 		if fruit.HasExpired() {
-			fruit.Generate(extra)
-			return fruit
+			return fruit.Generate(extra)
 		}
 	}
 	fruit := NewFruit(g.level, extra)
@@ -371,6 +387,7 @@ func (g *Game) NewOrb() *Orb {
 	return nil
 }
 
+// Fire generates a new bolt
 func (g *Game) Fire(directionX, x, y float64) {
 	// reuse an existing bolt
 	for _, bolt := range g.bolts {

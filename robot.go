@@ -57,6 +57,7 @@ func NewRobot(level *Level) *Robot {
 	}
 }
 
+// Generate a new robot of type robotType
 func (r *Robot) Generate(robotType RobotType) *Robot {
 	r.alive = true
 	r.robotType = robotType
@@ -75,6 +76,9 @@ func (r *Robot) IsAlive() bool {
 }
 
 func (r *Robot) Update(game *Game) {
+	if !r.IsAlive() {
+		return
+	}
 	r.changeDirectionTimer--
 	r.fireTimer++
 	// move in current direction, change direction if we hit a wall
@@ -160,5 +164,8 @@ func (r *Robot) Update(game *Game) {
 }
 
 func (r *Robot) Draw(screen *ebiten.Image) {
+	if !r.IsAlive() {
+		return
+	}
 	r.Sprite.Draw(screen)
 }
