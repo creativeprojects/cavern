@@ -95,7 +95,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func (g *Game) Start() *Game {
 	g.Initialize()
 
-	g.player.Start(g.level)
+	g.player.Start(g.level, false)
 
 	g.state = StatePlaying
 	return g
@@ -138,6 +138,8 @@ func (g *Game) Update() error {
 		for _, robot := range g.robots {
 			robot.Update(g)
 		}
+
+		g.player.Update(g)
 
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			g.Start()

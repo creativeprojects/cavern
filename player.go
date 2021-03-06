@@ -94,8 +94,8 @@ func (p *Player) String() string {
 	)
 }
 
-func (p *Player) Start(level *Level) *Player {
-	p.demo = false
+func (p *Player) Start(level *Level, demo bool) *Player {
+	p.demo = demo
 	p.gravity = NewGravity(level, p.sprite)
 	p.Reset()
 	p.sprite.Animate([]*ebiten.Image{p.imageStill}, nil, 8, true)
@@ -127,6 +127,9 @@ func (p *Player) Hit(x, y, directionX float64, game *Game) bool {
 }
 
 func (p *Player) Update(game *Game) {
+	// if p.demo {
+	// 	p.Move(-1, 0, PlayerDefaultSpeed)
+	// }
 	if p.fireTimer >= 0 {
 		p.fireTimer--
 	}
@@ -199,9 +202,7 @@ func (p *Player) Update(game *Game) {
 
 // Draw the player on the screen
 func (p *Player) Draw(screen *ebiten.Image) {
-	if !p.demo {
-		p.sprite.Draw(screen)
-	}
+	p.sprite.Draw(screen)
 
 	// Draw player score
 	scoreBytes := []byte(fmt.Sprintf("%d", p.score))
