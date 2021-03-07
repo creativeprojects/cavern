@@ -114,7 +114,7 @@ func (g *Game) Update() error {
 	if g.state == StateMenu {
 		g.space.Update()
 
-		if math.Mod(g.timer, NewEnemyRate) == 0 {
+		if len(g.robots) < 4 && math.Mod(g.timer, NewEnemyRate) == 0 {
 			robotType := g.level.NextEnemy()
 			if robotType > RobotNone {
 				g.CreateRobot(robotType)

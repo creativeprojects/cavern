@@ -99,6 +99,11 @@ func (r *Robot) Update(game *Game) {
 	}
 	r.Gravity.UpdateFall()
 
+	// no need to go further when in demo mode
+	if game.player == nil {
+		return
+	}
+
 	// the more powerful type of robot can deliberately shoot at orbs - turning to face them if necessary
 	if r.robotType == RobotAggressive && r.fireTimer >= 24 {
 		// go through all the orbs to see if any can be shot
