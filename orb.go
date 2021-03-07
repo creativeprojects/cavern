@@ -101,8 +101,8 @@ func (o *Orb) Update(game *Game) {
 		if o.trappedEnemyType > RobotNone {
 			fruit := game.CreateFruit(true)
 			fruit.MoveTo(o.X(lib.XCentre), math.Ceil(o.Y(lib.YBottom)))
-			game.RandomSoundEffect(o.popSounds)
 		}
+		game.RandomSoundEffect(o.popSounds)
 		return
 	}
 	o.Sprite.Update()

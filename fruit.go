@@ -101,7 +101,7 @@ func (f *Fruit) Update(game *Game) {
 		game.StartPop(PopFruit, f.X(lib.XCentre), f.Y(lib.YBottom))
 		return
 	}
-	if game.player.sprite.CollidePoint(f.X(lib.XCentre), f.Y(lib.YCentre)) {
+	if game.player != nil && game.player.sprite.CollidePoint(f.X(lib.XCentre), f.Y(lib.YCentre)) {
 		f.TTL = 0
 		switch f.Type {
 		case ExtraHealth:

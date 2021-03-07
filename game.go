@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"image/color"
 	"log"
 	"math"
 	"math/rand"
@@ -10,7 +9,6 @@ import (
 	"github.com/creativeprojects/cavern/lib"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -72,7 +70,6 @@ func (g *Game) Initialize() *Game {
 	g.timer = -1
 	g.level = NewLevel()
 	g.level.Next()
-	g.player = NewPlayer(g.level)
 	g.fruits = make([]*Fruit, 0, 10)
 	g.pops = make([]*Pop, 0, 10)
 	g.orbs = make([]*Orb, MaxOrbs)
@@ -94,9 +91,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 // Start a new game
 func (g *Game) Start() *Game {
 	g.Initialize()
-
-	g.player.Start(g.level, false)
-
+	g.player = NewPlayer().Start(g.level, false)
 	g.state = StatePlaying
 	return g
 }
@@ -111,13 +106,24 @@ func (g *Game) NextLevel() {
 func (g *Game) Update() error {
 	g.timer++
 
-	// Debug
-	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+	// Debug screen
+	if Debug && inpututil.IsKeyJustPressed(ebiten.KeyD) {
 		g.debug = !g.debug
 	}
 
 	if g.state == StateMenu {
 		g.space.Update()
+
+		if math.Mod(g.timer, NewEnemyRate) == 0 {
+			robotType := g.level.NextEnemy()
+			if robotType > RobotNone {
+				g.CreateRobot(robotType)
+			}
+		}
+
+		if math.Mod(g.timer, NewFruitRate) == 0 {
+			g.CreateFruit(false)
+		}
 
 		for _, pop := range g.pops {
 			pop.Update()
@@ -139,8 +145,6 @@ func (g *Game) Update() error {
 			robot.Update(g)
 		}
 
-		g.player.Update(g)
-
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			g.Start()
 		}
@@ -148,12 +152,12 @@ func (g *Game) Update() error {
 	}
 	if g.state == StatePlaying {
 		// skip to next level
-		if inpututil.IsKeyJustPressed(ebiten.KeyN) {
+		if Debug && inpututil.IsKeyJustPressed(ebiten.KeyN) {
 			g.NextLevel()
 		}
 
 		// toggle between slow and normal speed mode
-		if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		if Debug && inpututil.IsKeyJustPressed(ebiten.KeyS) {
 			g.slow = !g.slow
 			if g.slow {
 				ebiten.SetMaxTPS(GameSlowSpeed)
@@ -163,7 +167,7 @@ func (g *Game) Update() error {
 		}
 
 		// instant game over
-		if inpututil.IsKeyJustPressed(ebiten.KeyO) {
+		if Debug && inpututil.IsKeyJustPressed(ebiten.KeyO) {
 			g.state = StateGameOver
 		}
 
@@ -309,7 +313,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		orb.Draw(screen)
 	}
 
-	g.player.Draw(screen)
+	if g.state == StatePlaying {
+		g.player.Draw(screen)
+	}
 
 	if g.debug {
 		g.displayDebug(screen)
@@ -402,29 +408,18 @@ func (g *Game) Fire(directionX, x, y float64) {
 	g.bolts = append(g.bolts, NewBolt(g.level).Fire(directionX, x, y))
 }
 
-func (g *Game) displayDebug(screen *ebiten.Image) {
-	template := " TPS: %0.2f \n Level %d - Colour %d \n Fruits %d - Pops %d - Orbs %d - Robots %d - Bolts %d \n%s"
-	msg := fmt.Sprintf(template,
-		ebiten.CurrentTPS(),
-		g.level.id,
-		g.level.colour,
-		len(g.fruits),
-		len(g.pops),
-		len(g.orbs),
-		len(g.robots),
-		len(g.bolts),
-		g.player,
-	)
-	fruitTemplate := " Fruit %d: ttl: %d coordinates: %s\n"
-	for i, fruit := range g.fruits {
-		msg += fmt.Sprintf(fruitTemplate, i, fruit.TTL, fruit.Sprite.String())
-	}
-	ebitenutil.DebugPrint(screen, msg)
+func (g *Game) Orbs() []*Orb {
+	return g.orbs
+}
 
-	ebitenutil.DrawLine(screen, 70, 75, 70, 400, color.White)
-	ebitenutil.DrawLine(screen, 730, 75, 730, 400, color.White)
-	ebitenutil.DrawLine(screen, 70, 75, 730, 75, color.White)
-	ebitenutil.DrawLine(screen, 70, 400, 730, 400, color.White)
+func (g *Game) ActiveOrbs() []*Orb {
+	orbs := make([]*Orb, 0, len(g.orbs))
+	for _, orb := range g.orbs {
+		if orb.IsActive() {
+			orbs = append(orbs, orb)
+		}
+	}
+	return orbs
 }
 
 // CharWidth returns width of given character. For characters other than the letters A to Z (i.e. space, and the digits 0 to 9),

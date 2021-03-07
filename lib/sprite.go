@@ -8,48 +8,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// XType represents the type of the X coordinate (centre, left or right)
-type XType int
-
-// XType
-const (
-	XLeft XType = iota
-	XCentre
-	XRight
-)
-
-func (x XType) String() string {
-	switch x {
-	case XCentre:
-		return "X center"
-	case XRight:
-		return "X right"
-	default:
-		return "X left"
-	}
-}
-
-// YType represents the type of the Y coordinate (centre, top or bottom)
-type YType int
-
-// YType
-const (
-	YTop YType = iota
-	YCentre
-	YBottom
-)
-
-func (y YType) String() string {
-	switch y {
-	case YCentre:
-		return "Y center"
-	case YBottom:
-		return "Y bottom"
-	default:
-		return "Y top"
-	}
-}
-
 // SequenceFunc is used as a callback to decide which image to draw
 type SequenceFunc func(int) int
 
@@ -132,24 +90,6 @@ func (s *Sprite) Draw(screen *ebiten.Image) {
 	screen.DrawImage(s.image, s.op)
 }
 
-func (s *Sprite) getFrameID() int {
-	if s.sequenceFunc != nil {
-		return s.sequenceFunc(s.frame)
-	}
-	current := float64(s.frame / s.rate)
-	if s.sequence == nil || len(s.sequence) == 0 {
-		// no sequence, we just go through all images one by one
-		frameID := int(math.Mod(current, float64(len(s.animation))))
-		return frameID
-	}
-	frameID := int(math.Mod(current, float64(len(s.sequence))))
-	// if frameID is over the size of animation, we pick the last one
-	if frameID >= len(s.animation) {
-		frameID = len(s.animation) - 1
-	}
-	return frameID
-}
-
 // Start (or restart) an animation
 func (s *Sprite) Start() *Sprite {
 	// only start if the animation is well defined
@@ -229,15 +169,17 @@ func (s *Sprite) MoveToType(x, y float64, xType XType, yType YType) *Sprite {
 	return s
 }
 
+// RawX returns the internal representation of x coordinate in the current coordinate mode
 func (s *Sprite) RawX() float64 {
 	return s.x
 }
 
+// RawY returns the internal representation of y coordinate in the current coordinate mode
 func (s *Sprite) RawY() float64 {
 	return s.y
 }
 
-// X returns x position. If not image is available to calculate width, it returns -1
+// X returns x position. If no image is available to calculate width, it returns -1
 func (s *Sprite) X(xType XType) float64 {
 	if s.image == nil {
 		return -1
@@ -253,7 +195,7 @@ func (s *Sprite) X(xType XType) float64 {
 	}
 }
 
-// Y returns y position. If not image is available to calculate height, it returns -1
+// Y returns y position. If no image is available to calculate height, it returns -1
 func (s *Sprite) Y(yType YType) float64 {
 	if s.image == nil {
 		return -1
@@ -273,6 +215,24 @@ func (s *Sprite) Y(yType YType) float64 {
 func (s *Sprite) CollidePoint(x, y float64) bool {
 	return s.X(XLeft) <= x && x <= s.X(XRight) &&
 		s.Y(YTop) <= y && y <= s.Y(YBottom)
+}
+
+func (s *Sprite) getFrameID() int {
+	if s.sequenceFunc != nil {
+		return s.sequenceFunc(s.frame)
+	}
+	current := float64(s.frame / s.rate)
+	if s.sequence == nil || len(s.sequence) == 0 {
+		// no sequence, we just go through all images one by one
+		frameID := int(math.Mod(current, float64(len(s.animation))))
+		return frameID
+	}
+	frameID := int(math.Mod(current, float64(len(s.sequence))))
+	// if frameID is over the size of animation, we pick the last one
+	if frameID >= len(s.animation) {
+		frameID = len(s.animation) - 1
+	}
+	return frameID
 }
 
 func (s *Sprite) xleft(width float64) float64 {

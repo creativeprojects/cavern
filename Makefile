@@ -17,14 +17,14 @@ WASM_DIR=./wasm/
 all: test build
 
 build:
-		$(GOBUILD) -o $(BINARY) -v
+		$(GOBUILD) -tags prod -o $(BINARY) -v
 
 build-wasm:
 		cp $(shell go env GOROOT)/misc/wasm/wasm_exec.js $(WASM_DIR)
-		GOOS=js GOARCH=wasm $(GOBUILD) -o $(WASM_DIR)$(BINARY).wasm -v
+		GOOS=js GOARCH=wasm $(GOBUILD) -tags prod -o $(WASM_DIR)$(BINARY).wasm -v
 
 test:
-		$(GOTEST) -v $(TESTS)
+		$(GOTEST) -race -v $(TESTS)
 
 coverage:
 		$(GOTEST) -coverprofile=$(COVERAGE_FILE) $(TESTS)

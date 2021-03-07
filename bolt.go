@@ -46,7 +46,7 @@ func (b *Bolt) Update(game *Game) {
 		return
 	}
 	// collision with an orb
-	for _, orb := range game.orbs {
+	for _, orb := range game.ActiveOrbs() {
 		if orb.Hit(b.X(lib.XCentre), b.Y(lib.YCentre)) {
 			b.active = false
 			return

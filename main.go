@@ -40,7 +40,11 @@ var (
 func main() {
 	var err error
 
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	if Debug {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	} else {
+		log.SetOutput(nil)
+	}
 
 	images, err = loadImages()
 	if err != nil {

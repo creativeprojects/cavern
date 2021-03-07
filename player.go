@@ -55,12 +55,10 @@ type Player struct {
 	blowingOrb    *Orb    // orb being blown right now / nil if none
 }
 
-func NewPlayer(level *Level) *Player {
+func NewPlayer() *Player {
 	sprite := lib.NewSprite(lib.XCentre, lib.YBottom)
-	gravity := NewGravity(level, sprite)
 	return &Player{
 		sprite:        sprite,
-		gravity:       gravity,
 		imageBlank:    images[imagePlayerBlank],
 		imageStill:    images[imagePlayerStill],
 		runLeft:       []*ebiten.Image{images["run00"], images["run01"], images["run02"], images["run03"]},
@@ -77,25 +75,13 @@ func NewPlayer(level *Level) *Player {
 		blowSounds:    [][]byte{sounds["blow0"] /*sounds["blow1"],*/, sounds["blow2"], sounds["blow3"]},
 		ouchSounds:    [][]byte{sounds["ouch0"], sounds["ouch1"], sounds["ouch2"], sounds["ouch3"]},
 		dieSound:      sounds["die0"],
-		lives:         PlayerStartLives,
 		demo:          true,
 	}
 }
 
-// String returns a debug string
-func (p *Player) String() string {
-	return fmt.Sprintf(" Player score %d - health %d - lives %d - blow timer %d - hurt timer %d\n Player coordinates: %s\n",
-		p.score,
-		p.health,
-		p.lives,
-		p.blowTimer,
-		p.hurtTimer,
-		p.sprite.String(),
-	)
-}
-
 func (p *Player) Start(level *Level, demo bool) *Player {
 	p.demo = demo
+	p.lives = PlayerStartLives
 	p.gravity = NewGravity(level, p.sprite)
 	p.Reset()
 	p.sprite.Animate([]*ebiten.Image{p.imageStill}, nil, 8, true)
@@ -110,6 +96,10 @@ func (p *Player) Reset() {
 
 // Hit tests if the coordinates collide with us and returns yes if it does
 func (p *Player) Hit(x, y, directionX float64, game *Game) bool {
+	// no player (demo mode)
+	if p == nil {
+		return false
+	}
 	collided := p.sprite.CollidePoint(x, y) && p.hurtTimer < 0
 	if collided {
 		p.hurtTimer = PlayerStartInvulnerability
@@ -127,9 +117,10 @@ func (p *Player) Hit(x, y, directionX float64, game *Game) bool {
 }
 
 func (p *Player) Update(game *Game) {
-	// if p.demo {
-	// 	p.Move(-1, 0, PlayerDefaultSpeed)
-	// }
+	// no player (demo mode)
+	if p == nil {
+		return
+	}
 	if p.fireTimer >= 0 {
 		p.fireTimer--
 	}
@@ -202,6 +193,10 @@ func (p *Player) Update(game *Game) {
 
 // Draw the player on the screen
 func (p *Player) Draw(screen *ebiten.Image) {
+	// no player (demo mode)
+	if p == nil {
+		return
+	}
 	p.sprite.Draw(screen)
 
 	// Draw player score

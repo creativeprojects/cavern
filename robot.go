@@ -122,7 +122,7 @@ func (r *Robot) Update(game *Game) {
 	if r.fireTimer >= 12 {
 		// random chance of firing each frame. Likehood increases 10 times if player is at the same height as us
 		probability := game.level.FireProbability()
-		if r.Y(lib.YTop) < game.player.sprite.Y(lib.YBottom) && r.Y(lib.YBottom) > game.player.sprite.Y(lib.YTop) {
+		if game.player != nil && r.Y(lib.YTop) < game.player.sprite.Y(lib.YBottom) && r.Y(lib.YBottom) > game.player.sprite.Y(lib.YTop) {
 			probability *= 10
 		}
 		if rand.Float64() < probability {
