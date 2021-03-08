@@ -10,4 +10,5 @@ func (g *Game) displayDebug(screen *ebiten.Image) {
 }
 
 func (p *Player) String() string {
+	return ""
 }

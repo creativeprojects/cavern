@@ -91,7 +91,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 // Start a new game
 func (g *Game) Start() *Game {
 	g.Initialize()
-	g.player = NewPlayer().Start(g.level, false)
+	g.player = NewPlayer().Start(g.level)
 	g.state = StatePlaying
 	return g
 }
@@ -151,24 +151,27 @@ func (g *Game) Update() error {
 		return nil
 	}
 	if g.state == StatePlaying {
-		// skip to next level
-		if Debug && inpututil.IsKeyJustPressed(ebiten.KeyN) {
-			g.NextLevel()
-		}
-
-		// toggle between slow and normal speed mode
-		if Debug && inpututil.IsKeyJustPressed(ebiten.KeyS) {
-			g.slow = !g.slow
-			if g.slow {
-				ebiten.SetMaxTPS(GameSlowSpeed)
-			} else {
-				ebiten.SetMaxTPS(GameNormalSpeed)
+		// Debug keys
+		if Debug {
+			// skip to next level
+			if inpututil.IsKeyJustPressed(ebiten.KeyN) {
+				g.NextLevel()
 			}
-		}
 
-		// instant game over
-		if Debug && inpututil.IsKeyJustPressed(ebiten.KeyO) {
-			g.state = StateGameOver
+			// toggle between slow and normal speed mode
+			if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+				g.slow = !g.slow
+				if g.slow {
+					ebiten.SetMaxTPS(GameSlowSpeed)
+				} else {
+					ebiten.SetMaxTPS(GameNormalSpeed)
+				}
+			}
+
+			// instant game over
+			if inpututil.IsKeyJustPressed(ebiten.KeyO) {
+				g.state = StateGameOver
+			}
 		}
 
 		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
@@ -313,9 +316,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		orb.Draw(screen)
 	}
 
-	if g.state == StatePlaying {
-		g.player.Draw(screen)
-	}
+	g.player.Draw(screen)
 
 	if g.debug {
 		g.displayDebug(screen)

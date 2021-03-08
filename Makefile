@@ -20,8 +20,9 @@ build:
 		$(GOBUILD) -tags prod -o $(BINARY) -v
 
 build-wasm:
-		cp $(shell go env GOROOT)/misc/wasm/wasm_exec.js $(WASM_DIR)
+		rsync -tv $(shell go env GOROOT)/misc/wasm/wasm_exec.js $(WASM_DIR)
 		GOOS=js GOARCH=wasm $(GOBUILD) -tags prod -o $(WASM_DIR)$(BINARY).wasm -v
+		gzip --force --keep --best $(WASM_DIR)$(BINARY).wasm
 
 test:
 		$(GOTEST) -race -v $(TESTS)

@@ -75,12 +75,10 @@ func NewPlayer() *Player {
 		blowSounds:    [][]byte{sounds["blow0"] /*sounds["blow1"],*/, sounds["blow2"], sounds["blow3"]},
 		ouchSounds:    [][]byte{sounds["ouch0"], sounds["ouch1"], sounds["ouch2"], sounds["ouch3"]},
 		dieSound:      sounds["die0"],
-		demo:          true,
 	}
 }
 
-func (p *Player) Start(level *Level, demo bool) *Player {
-	p.demo = demo
+func (p *Player) Start(level *Level) *Player {
 	p.lives = PlayerStartLives
 	p.gravity = NewGravity(level, p.sprite)
 	p.Reset()

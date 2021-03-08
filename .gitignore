@@ -2,4 +2,5 @@
 /cavern
 /pkged.go
 /wasm/cavern.wasm
+/wasm/cavern.wasm.gz
 /wasm/wasm_exec.js
