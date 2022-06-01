@@ -1,4 +1,5 @@
 .DS_Store
+/.vscode/*.log
 /cavern
 /pkged.go
 /wasm/cavern.wasm
