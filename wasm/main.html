@@ -1,5 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+<meta charset="UTF-8">
+<style>
+    @font-face {
+        font-family: "GameFont";
+        src: url("destructobeambb_reg.ttf") format("truetype");
+    }
+
+    body {
+        background-color: black;
+        color: blanchedalmond;
+        overflow: hidden;
+        font-size: larger;
+        font-family: "GameFont";
+    }
+
+    .container {
+        width: 800px;
+        height: 480px;
+        margin: 0 auto;
+    }
+</style>
+
+<body>
+    <div id="splash" class="container">
+        <h1>Loading game...</h1>
+    </div>
+</body>
+
 <script src="wasm_exec.js"></script>
 <script>
     // Polyfill
@@ -12,6 +40,7 @@
 
     const go = new Go();
     WebAssembly.instantiateStreaming(fetch("cavern.wasm"), go.importObject).then(result => {
+        document.getElementById("splash").remove();
         go.run(result.instance);
     });
 </script>
